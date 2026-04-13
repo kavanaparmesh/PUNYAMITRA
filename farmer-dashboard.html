@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>PMF Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #f5f7fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .dash-container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1300px;
+      position: relative;
+    }
+
+    /* ----- SIDEBAR (tight menu) ----- */
+    .dash-sidebar {
+      flex: 0 0 260px;
+      background: white;
+      border-radius: 28px;
+      padding: 28px 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.03);
+      transition: transform 0.3s ease;
+    }
+    .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0b4f3c;
+      margin-bottom: 40px;
+      padding-left: 12px;
+    }
+    .menu-section {
+      margin-bottom: 30px;
+    }
+    .menu-section h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #7a8f9b;
+      margin-bottom: 14px;
+      padding-left: 12px;
+    }
+    .menu-section ul {
+      list-style: none;
+    }
+    .menu-section li {
+      padding: 8px 12px;        /* reduced vertical padding for tighter gap */
+      margin: 2px 0;            /* minimal margin */
+      color: #1e2f3a;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: default;           /* no dropdown, just static items */
+      font-size: 0.95rem;
+      transition: background 0.1s;
+    }
+    .menu-section li:hover {
+      background: #f0f4f8;
+    }
+
+    /* ----- MAIN CONTENT (unchanged) ----- */
+    .dash-main {
+      flex: 1;
+      background: white;
+      border-radius: 28px;
+      padding: 24px 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.03);
+      min-width: 0;
+    }
+
+    .agent-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .agent-name {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #0c1f28;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .agent-name span {
+      color: #0b4f3c;
+      background: #e1f0ea;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin: 25px 0 30px;
+    }
+    .stat-card {
+      background: #f8fafd;
+      flex: 1 1 140px;
+      padding: 18px 12px;
+      border-radius: 22px;
+      border: 1px solid #eaedf2;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #0b4f3c;
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #4f6b7a;
+      font-weight: 500;
+    }
+
+    /* scrollable table */
+    .table-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #153243;
+      margin: 30px 0 16px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 1rem;
+      border-radius: 20px;
+      background: linear-gradient(to right, white 30%, rgba(255,255,255,0)),
+                  linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+      background-attachment: local, scroll;
+      background-repeat: no-repeat;
+      background-size: 40px 100%, 20px 100%;
+      background-position: right center;
+    }
+
+    .enroll-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 700px;
+    }
+    .enroll-table th,
+    .enroll-table td {
+      padding: 14px 10px 12px 0;
+      text-align: left;
+      border-bottom: 1px solid #edf2f6;
+      white-space: nowrap;
+    }
+    .enroll-table th {
+      color: #597888;
+      font-weight: 600;
+      border-bottom: 2px solid #e3eaf0;
+    }
+    .enroll-table td {
+      color: #1d313e;
+    }
+    .enroll-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .ack-number {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: #0b4f3c;
+      background: #f0f6f3;
+      padding: 4px 10px;
+      border-radius: 30px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    /* ----- MOBILE MENU (unchanged) ----- */
+    .menu-toggle {
+      display: none;
+      background: #0b4f3c;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 18px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .menu-toggle span { font-size: 1.5rem; }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media screen and (max-width: 700px) {
+      body { padding: 12px; }
+      .dash-container { flex-direction: column; }
+
+      .dash-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 280px;
+        max-width: 80%;
+        border-radius: 0 28px 28px 0;
+        transform: translateX(-100%);
+        z-index: 1000;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        overflow-y: auto;
+      }
+      .dash-sidebar.open {
+        transform: translateX(0);
+      }
+      .menu-toggle {
+        display: inline-flex;
+      }
+      .agent-name {
+        font-size: 1.2rem;
+      }
+      .stats-row .stat-card {
+        flex: 1 1 100%;
+      }
+      .enroll-table {
+        min-width: 620px;
+      }
+    }
+
+    .close-sidebar {
+      display: none;
+      text-align: right;
+      padding: 10px 16px 0;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #4f6b7a;
+    }
+    @media screen and (max-width: 700px) {
+      .close-sidebar {
+        display: block;
+      }
+    }
+
+
+/* links */
+.submenu li a,
+.direct-link {
+  text-decoration: none;
+  color: #1e2f3a;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.submenu li a:hover,
+.direct-link:hover {
+  background: #f0f4f8;
+  color: #0b4f3c;
+}
+
+/* Dropdown submenu */
+.has-submenu .menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.submenu {
+  list-style: none;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding-left: 12px;
+}
+
+.submenu li {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  color: #4f6b7a;
+}
+
+.has-submenu.active .submenu {
+  max-height: 300px; /* enough height to show all */
+}
+
+.submenu li a {
+  text-decoration: none;
+  color: #4f6b7a;
+  display: block;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.submenu li a:hover {
+  background: #eaf3ef;
+  color: #0b4f3c;
+}
+  </style>
+</head>
+<body>
+  <div class="dash-container">
+    <!-- SIDEBAR (flat list under DASHBOARD) -->
+    <aside class="dash-sidebar" id="sidebar">
+      <div class="close-sidebar" id="closeSidebarBtn">&times;</div>
+      <div class="logo">PMF</div>
+
+      <!-- DASHBOARD section with all seven items -->
+      <div class="menu-section">
+        <h3>DASHBOARD</h3>
+        <ul>
+  <!-- Enrollment -->
+  <li class="has-submenu">
+    <div class="menu-item" onclick="toggleMenu(this)">
+      📊 Enrollment <span class="arrow">⌄</span>
+    </div>
+    <ul class="submenu">
+      <li><a href="farmer-new-enrollment.html">New Enrollment</a></li>
+      <li><a href="farmer-document-pending.html">Document Pending</a></li>
+      <li><a href="farmer-pending-enrollment.html">Pending Enrollment</a></li>
+      <li><a href="farmer-approved-enrollment.html">Approved Enrollment</a></li>
+      <li><a href="farmer-reject-enrollment.html">Reject Enrollment</a></li>
+      <li><a href="farmer-renewal-enrollment.html">Renewal Enrollment</a></li>
+    </ul>
+  </li>
+
+  <!-- Virtual Card -->
+  <li class="has-submenu">
+    <div class="menu-item" onclick="toggleMenu(this)">
+      💳 Virtual Card <span class="arrow">⌄</span>
+    </div>
+    <ul class="submenu">
+      <li><a href="Farmer-Search-by-Account.html">Search by Account</a></li>
+      <li><a href="Farmer-Search-by-Aadhar.html">Search by Aadhar</a></li>
+      <li><a href="Farmer-Search-by-Mobile-No.html">Search by mobile No</a></li>
+      <li><a href="Farmer-profile.html">Generate Vitual Card</a></li>
+    </ul>
+  </li>
+
+  <!-- Benefit Report -->
+  <li class="has-submenu">
+    <div class="menu-item" onclick="toggleMenu(this)">
+      📋 Benefit Report <span class="arrow">⌄</span>
+    </div>
+    <ul class="submenu">
+      <li><a href="Girls-Scholarship.html">Girls Scholarship</a></li>
+      <li><a href="Health-Claim.html">Health Claim</a></li>
+      <li><a href="PAI-Claim.html">PAI Claim</a></li>
+      <li><a href="Higher-Education.html">Higher Education</a></li>
+    </ul>
+  </li>
+
+  <!-- Transaction Report (DIRECT LINK) -->
+  <li>
+    <a href="transaction-report.html" class="direct-link">
+      📊 Transaction Report
+    </a>
+  </li>
+
+  <!-- Self Help -->
+  <li class="has-submenu">
+    <div class="menu-item" onclick="toggleMenu(this)">
+      🛠️ Self Help <span class="arrow">⌄</span>
+    </div>
+    <ul class="submenu">
+      <li><a href="profile.html">Profile</a></li>
+      <li><a href="setting.html">Setting</a></li>
+    </ul>
+  </li>
+
+  <!-- User Benefit -->
+  <li class="has-submenu">
+    <div class="menu-item" onclick="toggleMenu(this)">
+      👥 User Benefit <span class="arrow">⌄</span>
+    </div>
+    <ul class="submenu">
+      <li><a href="complete-profile.html">Complete Profile</a></li>
+      <li><a href="sip-status.html">SIP Status</a></li>
+      <li><a href="apply-claim.html">Apply Claim</a></li>
+    </ul>
+  </li>
+</ul>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="overlay"></div>
+
+    <!-- MAIN CONTENT (same stats and table) -->
+    <main class="dash-main">
+      <button class="menu-toggle" id="menuToggle">
+        <span>☰</span> Menu
+      </button>
+
+      <div class="agent-header">
+        <div><span id="loggedAgentName">Agent Name</span></div>
+      </div>
+
+      <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Total Enrollment</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Approved</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+
+      <div class="table-title">📌 Enrollments</div>
+      <div class="table-wrapper">
+        <table class="enroll-table">
+          <thead>
+            <tr>
+              <th>Acknowledgement No</th>
+              <th>Farmer Name</th>
+             <th>Type</th>
+              <th>Enroll Date</th>
+            </tr>
+          </thead>
+          <tbody id="enrollmentTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      // Sidebar toggle (mobile) – same as before
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const menuToggle = document.getElementById('menuToggle');
+      const closeBtn = document.getElementById('closeSidebarBtn');
+
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      menuToggle.addEventListener('click', openSidebar);
+      closeBtn.addEventListener('click', closeSidebar);
+      overlay.addEventListener('click', closeSidebar);
+
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+          closeSidebar();
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 700) {
+          sidebar.classList.remove('open');
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    })();
+    
+  function toggleMenu(element) {
+  const parent = element.parentElement;
+
+  // close others (optional clean UI)
+  document.querySelectorAll(".has-submenu").forEach(item => {
+    if (item !== parent) item.classList.remove("active");
+  });
+
+  parent.classList.toggle("active");
+}
+
+const agentId = localStorage.getItem("agentId");
+
+if (!agentId) {
+  alert("Agent session expired. Please login again.");
+  window.location.href = "agent-login.html";
+}
+
+async function loadFarmerEnrollments() {
+  try {
+    const response = await fetch(`https://punyamitra-backend.onrender.com/farmer-dashboard-data/${agentId}`);
+    const data = await response.json();
+
+  const farmers = data.farmers || [];
+  console.log("FARMER API DATA:", farmers);
+  const total = farmers.length;
+
+    const approved = farmers.filter(f =>
+    (f.status || "").toLowerCase() === "approved"
+  ).length;
+
+const pending = farmers.filter(f => {
+  const status = (f.status || "").toLowerCase();
+  return status === "pending" || status === "";
+}).length;
+
+const rejected = farmers.filter(f =>
+  (f.status || "").toLowerCase() === "rejected"
+).length;
+
+const documentPending = farmers.filter(f =>
+  (f.status || "").toLowerCase() === "document pending"
+).length;
+
+    const renewal = farmers.filter(f => {
+      if (f.status === "Renewal") return true;
+     const rawDate = f.registeredAt || f.createdAt || f.date;
+     if (!rawDate) return false;
+
+      const regDate = new Date(rawDate);
+      const today = new Date();
+      const diffDays = Math.floor((today - regDate) / (1000 * 60 * 60 * 24));
+
+      return diffDays >= 365;
+    }).length;
+
+    // ✅ update cards
+    const cards = document.querySelectorAll(".stat-value");
+    cards[0].textContent = total;
+    cards[1].textContent = approved;
+    cards[2].textContent = pending;
+
+    // ✅ table render
+    const tbody = document.getElementById("enrollmentTableBody");
+    tbody.innerHTML = "";
+    farmers
+    .filter(f => (f.status || "").toLowerCase() !== "rejected")
+    .forEach((farmer, index) => {
+    tbody.innerHTML += `
+  <tr>
+    <td><span class="ack-number">${farmer.farmer_id || "FAR" + (1000 + index)}</span></td>
+    <td>${farmer.farmerName || farmer.fullname || farmer.name || "-"}</td>
+    <td>${farmer.userType || "Farmer"}</td>
+    <td>${
+  farmer.registeredAt || farmer.createdAt || farmer.date
+    ? new Date(
+        farmer.registeredAt || farmer.createdAt || farmer.date
+      ).toLocaleString()
+    : "-"
+}</td>
+  </tr>
+`;
+  });
+
+  } catch (error) {
+    console.error("Farmer load failed:", error);
+  }
+}
+
+loadFarmerEnrollments();
+setInterval(loadFarmerEnrollments, 5000);
+  </script>
+
+ <script>
+ document.addEventListener("DOMContentLoaded", async function () {
+  const currentFarmer = JSON.parse(localStorage.getItem("currentFarmer"));
+  const agentId = localStorage.getItem("agentId");
+
+  // ✅ if no local session, do not force logout immediately
+  if (!agentId) return;
+
+  try {
+    const response = await fetch(`https://punyamitra-backend.onrender.com/farmer-dashboard-data/${agentId}`);
+    const data = await response.json();
+
+    const farmers = data.farmers || [];
+    if (!farmers.length) return;
+
+    // ✅ use first registered farmer master record
+    const farmer = farmers[0];
+
+    const registeredAt = new Date(
+      farmer.registeredAt || currentFarmer?.registeredAt
+    );
+
+    if (isNaN(registeredAt)) return;
+
+    const today = new Date();
+    const renewalDate = new Date(registeredAt);
+    renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+
+    if (today >= renewalDate) {
+      alert("Your farmer registration has completed 1 year. Please renew now.");
+    }
+
+  } catch (error) {
+    console.error("Renewal check failed:", error);
+  }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const agent = JSON.parse(localStorage.getItem("agentData"));
+
+  if (agent && agent.name) {
+    const el = document.getElementById("loggedAgentName");
+    if (el) el.textContent = agent.name;
+  }
+});
+</script>
+</body>
+</html>

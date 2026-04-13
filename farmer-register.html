@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Registration | AgriConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e8f0e9 0%, #c8e0cf 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+    .register-container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: #1a3c2c;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+    .logo i { font-size: 1.8rem; color: #f5b042; }
+    .logo span { font-weight: 700; font-size: 1.4rem; color: white; }
+    .back-home {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .back-home i { margin-right: 6px; }
+    .back-home:hover { background: #f5b042; color: #1a3c2c; }
+    .form-section { padding: 2rem 2rem 2.5rem; }
+    .form-section h2 { color: #1a3c2c; font-size: 1.8rem; margin-bottom: 0.25rem; }
+    .form-section p {
+      color: #5a7c6a;
+      margin-bottom: 1.8rem;
+      border-left: 4px solid #f5b042;
+      padding-left: 1rem;
+    }
+    .form-group { margin-bottom: 1.4rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #1f2e2a; font-size: 0.9rem; }
+    label .required { color: #e26d5c; margin-left: 3px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #e0e8e0;
+      border-radius: 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: 0.2s;
+      background: #fefefc;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #f5b042;
+      box-shadow: 0 0 0 3px rgba(245, 176, 66, 0.2);
+    }
+    .row-2col { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .row-2col > * { flex: 1; min-width: 140px; }
+    button {
+      background: #f5b042;
+      color: #1a3c2c;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.9rem 1.8rem;
+      border: none;
+      border-radius: 3rem;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    button:hover { background: #e09d32; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.1); }
+    .success-message {
+      background: #dff0e4;
+      color: #1f6e43;
+      padding: 1rem;
+      border-radius: 1rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    footer {
+      background: #f8fbf5;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #6e8f7c;
+      border-top: 1px solid #e2ecd9;
+    }
+  </style>
+</head>
+<body>
+<div class="register-container">
+  <div class="header">
+    <a href="index.html" class="logo">
+      <i class="fas fa-seedling"></i>
+      <span>Punya<span style="color:#f5b042;">Mitra</span></span>
+    </a>
+    <a href="index.html" class="back-home"><i class="fas fa-home"></i> Home</a>
+  </div>
+  <div class="form-section">
+    <h2>🌾 Farmer Registration</h2>
+    <p>Join the network – access subsidies, market prices, and expert advice.</p>
+
+    <form id="farmerForm">
+      <div class="form-group">
+        <label>Full Name <span class="required">*</span></label>
+        <input type="text" id="fullname" placeholder="e.g. Rajesh Kumar" required>
+      </div>
+
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email" id="email" placeholder="farmer@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Phone <span class="required">*</span></label>
+          <input type="tel" id="phone" placeholder="10 digits" pattern="[0-9]{10}" required>
+        </div>
+      </div>
+      <div class="row-2col">
+  <div class="form-group">
+    <label>Date of Birth <span class="required">*</span></label>
+    <input type="date" id="dob" required>
+  </div>
+
+  <div class="form-group">
+    <label>Address / Village <span class="required">*</span></label>
+    <textarea rows="2" id="address" placeholder="Village, District, State" required></textarea>
+  </div>
+</div>
+
+<div class="row-2col">
+  <div class="form-group">
+    <label>Farm Size (acres)</label>
+    <input type="number" id="farmSize" step="0.1" placeholder="e.g., 2.5">
+  </div>
+
+  <div class="form-group">
+    <label>Main Crop</label>
+    <input type="text" id="crop" placeholder="e.g., Wheat, Rice">
+  </div>
+</div>
+      <div class="form-group">
+        <label>Aadhaar Number (optional)</label>
+        <input type="text" id="aadhaar" placeholder="12-digit number" pattern="[0-9]{12}">
+      </div>
+
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Password <span class="required">*</span></label>
+          <input type="password" id="password" placeholder="Min. 6 characters" minlength="6" required>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password <span class="required">*</span></label>
+          <input type="password" id="confirmPwd" placeholder="Re-enter password" required>
+        </div>
+      </div>
+
+      <button type="submit"><i class="fas fa-user-plus"></i> Register as Farmer</button>
+    </form>
+    <div id="successMsg" class="success-message">
+      <i class="fas fa-check-circle"></i> Registration successful! Redirecting to farmer dashboard...
+    </div>
+  </div>
+  <footer>
+    <i class="fas fa-tractor"></i> Empowering Indian farmers with digital access
+  </footer>
+</div>
+
+<script>
+document.getElementById('farmerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const pwd = document.getElementById('password').value;
+  const confirm = document.getElementById('confirmPwd').value;
+
+  if (pwd !== confirm) {
+    alert("Passwords do not match. Please try again.");
+    return;
+  }
+
+  const phone = document.getElementById('phone').value;
+  if (!/^\d{10}$/.test(phone)) {
+    alert("Phone number must be exactly 10 digits.");
+    return;
+  }
+
+  const aadhaar = document.getElementById('aadhaar').value;
+  if (aadhaar && !/^\d{12}$/.test(aadhaar)) {
+    alert("Aadhaar number must be 12 digits (if provided).");
+    return;
+  }
+
+  const farmer = {
+  fullname: document.getElementById('fullname').value,
+  email: document.getElementById('email').value,
+  phone: phone,
+  dob: document.getElementById('dob').value,
+  address: document.getElementById('address').value,
+  farmSize: document.getElementById('farmSize').value,
+  crop: document.getElementById('crop').value,
+  aadhaar: aadhaar,
+  password: pwd,
+  agent_id: localStorage.getItem("agentId"),
+  registeredAt: new Date().toISOString()
+};
+
+  try {
+    const response = await fetch("https://punyamitra-backend.onrender.com/farmer-register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(farmer)
+    });
+
+    if (!response.ok) {
+      throw new Error("Farmer save failed");
+    }
+
+    document.getElementById('successMsg').style.display = 'flex';
+
+   setTimeout(() => {
+      document.getElementById("successMsg").style.display = "flex";
+      window.location.href = "farmer-dashboard.html";
+    }, 1200);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save farmer registration");
+  }
+});
+</script>
+</body>
+</html>

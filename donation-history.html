@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Donation History</title>
+    <style>
+        body{
+            font-family:Arial;
+            background:#f5f5f5;
+            padding:20px;
+        }
+        .card{
+            background:white;
+            padding:20px;
+            margin:10px 0;
+            border-radius:10px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+
+<h1>Donation History</h1>
+<div class="card">Total Donations: <span id="count">0</span></div>
+<div class="card">Total Collection: ₹<span id="total">0</span></div>
+
+<div id="history"></div>
+
+<script>
+async function loadDonations(){
+    const res = await fetch("https://punyamitra-backend.onrender.com/api/payment/donations");
+    const data = await res.json();
+
+    document.getElementById("count").textContent = data.donations.length;
+
+    const total = data.donations.reduce((sum,d)=>sum+(d.amount||0),0);
+    document.getElementById("total").textContent = total;
+
+    document.getElementById("history").innerHTML =
+        data.donations.map(d=>`
+            <div class="card">
+                ₹${d.amount}<br>
+                Payment ID: ${d.razorpay_payment_id}<br>
+                ${new Date(d.donatedAt).toLocaleString()}
+            </div>
+        `).join("");
+}
+loadDonations();
+</script>
+
+</body>
+</html>

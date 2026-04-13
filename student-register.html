@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration | AgriConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    /* same styles as farmer page */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #eef2f0 0%, #cbdcd2 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+    .register-container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: #1a3c2c;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+    .logo i { font-size: 1.8rem; color: #f5b042; }
+    .logo span { font-weight: 700; font-size: 1.4rem; color: white; }
+    .back-home {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .back-home i { margin-right: 6px; }
+    .back-home:hover { background: #f5b042; color: #1a3c2c; }
+    .form-section { padding: 2rem 2rem 2.5rem; }
+    .form-section h2 { color: #1a3c2c; font-size: 1.8rem; margin-bottom: 0.25rem; }
+    .form-section p {
+      color: #5a7c6a;
+      margin-bottom: 1.8rem;
+      border-left: 4px solid #f5b042;
+      padding-left: 1rem;
+    }
+    .form-group { margin-bottom: 1.4rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #1f2e2a; font-size: 0.9rem; }
+    label .required { color: #e26d5c; }
+    input, select {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #e0e8e0;
+      border-radius: 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fefefc;
+      transition: 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #f5b042;
+      box-shadow: 0 0 0 3px rgba(245, 176, 66, 0.2);
+    }
+    .row-2col { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .row-2col > * { flex: 1; min-width: 150px; }
+    button {
+      background: #f5b042;
+      color: #1a3c2c;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.9rem 1.8rem;
+      border: none;
+      border-radius: 3rem;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    button:hover { background: #e09d32; transform: translateY(-2px); }
+    .success-message {
+      background: #dff0e4;
+      color: #1f6e43;
+      padding: 1rem;
+      border-radius: 1rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    footer {
+      background: #f8fbf5;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #6e8f7c;
+      border-top: 1px solid #e2ecd9;
+    }
+  </style>
+</head>
+<body>
+<div class="register-container">
+  <div class="header">
+    <a href="index.html" class="logo">
+      <i class="fas fa-seedling"></i>
+      <span>Punya<span style="color:#f5b042;">Mitra</span></span>
+    </a>
+    <a href="index.html" class="back-home"><i class="fas fa-home"></i> Home</a>
+  </div>
+  <div class="form-section">
+    <h2>🎓 Student Registration</h2>
+    <p>Join as an agriculture student – access courses, internships, and research tools.</p>
+
+    <form id="studentForm">
+      <div class="form-group">
+        <label>Full Name <span class="required">*</span></label>
+        <input type="text" id="fullname" placeholder="e.g. Priya Sharma" required>
+      </div>
+
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email" id="email" placeholder="student@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Mobile <span class="required">*</span></label>
+          <input type="tel" id="phone" placeholder="10 digits" pattern="[0-9]{10}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Aadhaar Number <span class="required">*</span></label>
+        <input type="text" id="aadhaar" placeholder="Enter 12-digit Aadhaar" maxlength="12" required>
+      </div>
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Date of Birth <span class="required">*</span></label>
+          <input type="date" id="dob" required>
+        </div>
+        <div class="form-group">
+          <label>Course / Stream</label>
+          <select id="course">
+            <option value="Agriculture">Agriculture</option>
+            <option value="Horticulture">Horticulture</option>
+            <option value="Agribusiness">Agribusiness Management</option>
+            <option value="Soil Science">Soil Science</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Institution Name <span class="required">*</span></label>
+          <input type="text" id="institution" placeholder="University / College name" required>
+        </div>
+        <div class="form-group">
+          <label>Year of Study</label>
+          <select id="year">
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+            <option>PG / Research</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row-2col">
+        <div class="form-group">
+          <label>Password <span class="required">*</span></label>
+          <input type="password" id="password" placeholder="Min. 6 characters" minlength="6" required>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password <span class="required">*</span></label>
+          <input type="password" id="confirmPwd" placeholder="Re-enter password" required>
+        </div>
+      </div>
+
+      <button type="submit"><i class="fas fa-graduation-cap"></i> Register as Student</button>
+    </form>
+    <div id="successMsg" class="success-message">
+      <i class="fas fa-check-circle"></i> Registration successful! Redirecting to student dashboard...
+    </div>
+  </div>
+  <footer>
+    <i class="fas fa-book-open"></i> Shaping future leaders in agriculture
+  </footer>
+</div>
+
+<script>
+document.getElementById('studentForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const pwd = document.getElementById('password').value;
+  const confirm = document.getElementById('confirmPwd').value;
+
+  if (pwd !== confirm) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  const phone = document.getElementById('phone').value;
+  if (!/^\d{10}$/.test(phone)) {
+    alert("Phone number must be exactly 10 digits.");
+    return;
+  }
+
+  const dob = document.getElementById('dob').value;
+  if (!dob) {
+    alert("Date of birth is required.");
+    return;
+  }
+
+  const student = {
+    fullname: document.getElementById('fullname').value,
+    email: document.getElementById('email').value,
+    phone: phone,
+    aadhaar: document.getElementById("aadhaar").value,
+    dob: dob,
+    course: document.getElementById('course').value,
+    institution: document.getElementById('institution').value,
+    year: document.getElementById('year').value,
+    password: pwd,
+    agent_id: localStorage.getItem("agentId"),
+    registeredAt: new Date().toISOString()
+  };
+
+  try {
+    const response = await fetch("https://punyamitra-backend.onrender.com/student-register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(student)
+    });
+
+    if (!response.ok) {
+      throw new Error("Student save failed");
+    }
+
+    document.getElementById('successMsg').style.display = 'flex';
+
+   setTimeout(() => {
+  localStorage.setItem("currentStudent", JSON.stringify({
+      studentId: student.phone,
+      password: student.password,
+      fullName: student.fullname
+  }));
+
+  window.location.href = "student-dashboard.html";
+}, 1200);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save student registration");
+  }
+});
+</script>
+</body>
+</html>

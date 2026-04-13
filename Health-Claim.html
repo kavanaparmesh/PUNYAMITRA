@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Claim</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+.topbar {
+  background: #2b95d6;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+}
+
+.logo {
+  font-weight: bold;
+}
+
+.user {
+  font-size: 14px;
+}
+
+/* BODY */
+body {
+  background: #f5f7fa;
+}
+
+/* MAIN */
+.container {
+  margin: 20px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* TITLE */
+.title {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* CONTROLS */
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: #f1f1f1;
+}
+
+/* PAGINATION */
+.pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="topbar">
+  <div class="logo">PMF</div>
+  <span id="loggedAgentName">Agent Name</span>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+  <h2>PMF Health Claim</h2>
+  <p style="color: gray; margin-bottom:15px;">Home - PMF - PMF Health Claim</p>
+
+  <div class="card">
+
+    <div class="title">PMF Health Claim</div>
+
+    <button style="background:green;color:white;border:none;padding:6px 12px;border-radius:4px;">
+      Credit list
+    </button>
+
+    <div class="top-controls">
+      <div>Show 10 entries</div>
+      <div>Search: <input type="text"></div>
+    </div>
+
+    <!-- TABLE -->
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student Name</th>
+          <th>Mobile</th>
+          <th>Area</th>
+          <th>Request Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td colspan="6" style="text-align:center;color:gray;">
+            No data available in table
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <div>Showing 0 to 0 of 0 entries</div>
+      <div>
+        <button>Previous</button>
+        <button>Next</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const tableBody = document.getElementById("tableBody");
+
+async function loadHealthClaims() {
+  try {
+    const res = await fetch("https://punyamitra-backend.onrender.com/health-claim-list");
+    const data = await res.json();
+
+    tableBody.innerHTML = "";
+
+    if (!data.length) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;color:gray;">
+            No data available in table
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    data.forEach((item, index) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${item.studentName}</td>
+          <td>${item.mobile}</td>
+          <td>${item.area}</td>
+          <td>${new Date(item.requestDate).toLocaleDateString()}</td>
+          <td>Claimed</td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+loadHealthClaims();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const agent = JSON.parse(localStorage.getItem("agentData"));
+
+  if (agent && agent.name) {
+    const el = document.getElementById("loggedAgentName");
+    if (el) el.textContent = agent.name;
+  }
+});
+</script>
+</body>
+</html>

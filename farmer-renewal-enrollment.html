@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Renewal Enrollment</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+select, input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: #f1f1f1;
+}
+
+.btn {
+  background: #2d8cf0;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  margin: 2px;
+  border: none;
+  background: #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination .active {
+  background: #2d8cf0;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  table {
+    min-width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    display: block;
+    background: #fff;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  }
+
+  tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  tbody td:last-child {
+    border-bottom: none;
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+  }
+}
+
+.profile-header {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-img {
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.action-btns {
+  margin-top: 20px;
+}
+
+.back-btn {
+  background: #777;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+h3 {
+  margin-bottom: 10px;
+}
+
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+
+    <h2>Renewal Enrollment</h2>
+
+    <div class="top-controls">
+      <div>
+        <label>Select Year</label><br>
+        <select>
+          <option>--Select year--</option>
+          <option>2025</option>
+          <option>2026</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Search</label><br>
+        <input type="text" id="searchInput" placeholder="Search...">
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Acknowledgement No</th>
+            <th>Farmer Name</th>
+            <th>Mobile</th>
+            <th>District</th>
+            <th>Enroll Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="7" class="empty">No renewal farmers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <div>Showing renewal farmers</div>
+
+      <div class="pagination">
+        <button>Previous</button>
+        <button class="active">1</button>
+        <button>Next</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="detailsPage" style="display:none;">
+  <div class="card">
+
+    <div class="profile-header">
+      <img src="https://via.placeholder.com/60" class="profile-img">
+      <div>
+        <h3>-</h3>
+        <p>Account No: -</p>
+        <p>Enroll Date: -</p>
+      </div>
+    </div>
+
+    <div class="info-grid"></div>
+
+    <h3 style="margin-top:25px;">Documents</h3>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Document Name</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="docTable">
+          <tr>
+            <td data-label="#">1</td>
+            <td data-label="Document Name">Aadhar Card</td>
+            <td data-label="Status">Uploaded</td>
+            <td data-label="Action"><button class="btn">View</button></td>
+          </tr>
+          <tr>
+            <td data-label="#">2</td>
+            <td data-label="Document Name">Income Certificate</td>
+            <td data-label="Status">Uploaded</td>
+            <td data-label="Action"><button class="btn">View</button></td>
+          </tr>
+          <tr>
+            <td data-label="#">3</td>
+            <td data-label="Document Name">Bank Passbook</td>
+            <td data-label="Status">Pending</td>
+            <td data-label="Action"><button class="btn" disabled>Not Available</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="action-btns">
+      <button class="btn">Virtual Card</button>
+      <button class="btn">Renewal</button>
+      <button class="btn back-btn" onclick="goBack()">Back</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const tableBody = document.getElementById("tableBody");
+const agentId = localStorage.getItem("agentId");
+let renewalFarmers = [];
+
+async function loadRenewalFarmers() {
+  try {
+    const response = await fetch(`https://punyamitra-backend.onrender.com/farmer-dashboard-data/${agentId}`);
+    const result = await response.json();
+
+   renewalFarmers = (result.farmers || []).filter(farmer => {
+  if (farmer.status === "Renewal") return true;
+  if (!farmer.date) return false;
+
+  const regDate = new Date(farmer.date);
+  const today = new Date();
+  const diffDays = Math.floor((today - regDate) / (1000 * 60 * 60 * 24));
+
+  return diffDays >= 365;
+});
+
+    tableBody.innerHTML = "";
+
+    if (!renewalFarmers.length) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">No renewal farmers</td>
+        </tr>
+      `;
+      return;
+    }
+
+    renewalFarmers.forEach((item, index) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td data-label="#">${index + 1}</td>
+          <td data-label="Acknowledgement No">${item.farmer_id || "REN" + (1000 + index)}</td>
+          <td data-label="Farmer Name">${item.name || "-"}</td>
+          <td data-label="Mobile">${item.mobile || "-"}</td>
+          <td data-label="District">${item.district || "-"}</td>
+          <td data-label="Enroll Date">${item.date || "-"}</td>
+          <td data-label="Action">
+            <button class="btn" onclick="openDetails(${index})">Details</button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Failed to load renewal farmers:", error);
+  }
+}
+
+function openDetails(index) {
+  const farmer = renewalFarmers[index];
+  if (!farmer) return;
+
+  document.querySelector(".profile-header h3").innerText = farmer.name || "-";
+
+  const profilePs = document.querySelectorAll(".profile-header p");
+  profilePs[0].innerText = "Account No: " + (farmer.farmer_id || "-");
+  profilePs[1].innerText = "Enroll Date: " + (farmer.date || "-");
+
+  document.querySelector(".info-grid").innerHTML = `
+    <div><b>Aadhar No</b><br>${farmer.aadhar || "-"}</div>
+    <div><b>Farmer Name</b><br>${farmer.name || "-"}</div>
+    <div><b>Father Name</b><br>${farmer.fatherName || "-"}</div>
+    <div><b>Mother Name</b><br>${farmer.motherName || "-"}</div>
+    <div><b>Gender</b><br>${farmer.gender || "-"}</div>
+    <div><b>Date of Birth</b><br>${farmer.dob || "-"}</div>
+    <div><b>Mobile</b><br>${farmer.mobile || "-"}</div>
+    <div><b>Email</b><br>${farmer.email || "-"}</div>
+    <div><b>Village/Town</b><br>${farmer.village || "-"}</div>
+    <div><b>Pin Code</b><br>${farmer.pincode || "-"}</div>
+    <div><b>District</b><br>${farmer.district || "-"}</div>
+    <div><b>State</b><br>${farmer.state || "-"}</div>
+    <div><b>Application Status</b><br>${farmer.status || "-"}</div>
+    <div><b>Agent Details</b><br>${farmer.agentName || "-"}</div>
+  `;
+
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("detailsPage").style.display = "block";
+}
+
+function goBack() {
+  document.querySelector(".container").style.display = "block";
+  document.getElementById("detailsPage").style.display = "none";
+}
+
+document.getElementById("searchInput").addEventListener("keyup", function () {
+  const value = this.value.toLowerCase();
+  const rows = document.querySelectorAll("#tableBody tr");
+
+  rows.forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+  });
+});
+
+loadRenewalFarmers();
+</script>
+</body>
+</html>

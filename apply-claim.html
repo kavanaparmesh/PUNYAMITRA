@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Dashboard Layout - flexible base */
+        .dashboard {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* SIDEBAR styling (desktop first) */
+        .sidebar {
+            width: 280px;
+            background: #0f172b;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            padding: 28px 24px;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .logo-area h2 {
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 1px;
+            color: white;
+            margin: 0;
+        }
+
+        .logo-area span {
+            font-size: 12px;
+            color: #94a3b8;
+            display: block;
+            margin-top: 6px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 0 16px 20px 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #cbd5e1;
+            transition: all 0.2s;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .nav-item:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2c3e66;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* main panel */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: #f8fafc;
+            min-width: 0; /* critical for flex overflow */
+        }
+
+        /* top header (user & SIP info) */
+        .top-header {
+            background: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-greeting h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .user-greeting p {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        .sip-card {
+            background: #eef2ff;
+            padding: 8px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sip-amount {
+            font-weight: 800;
+            font-size: 22px;
+            color: #1e3a8a;
+        }
+
+        .sip-progress {
+            background: #cbd5e1;
+            border-radius: 20px;
+            width: 100px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #2563eb;
+            width: 0%;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        /* claim content scroll */
+        .claim-content {
+            padding: 24px 28px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* card styles (form & table) */
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 32px;
+            overflow: hidden;
+            border: 1px solid #eef2ff;
+        }
+
+        .card-header {
+            padding: 18px 28px;
+            border-bottom: 1px solid #eef2f0;
+            background: #fefefe;
+        }
+
+        .card-header h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+            padding: 28px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #334155;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            font-size: 14px;
+            background: #fff;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .file-hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .btn-update {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: fit-content;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-update:hover {
+            background: #1d4ed8;
+            transform: scale(0.98);
+        }
+
+        /* table toolbar */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 20px 24px 12px 24px;
+            gap: 15px;
+            background: white;
+            border-bottom: 1px solid #eef2ff;
+        }
+
+        .entries-select {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .entries-select select {
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #cbd5e1;
+            background: white;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 8px 0;
+            width: 100%;
+            outline: none;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0 0 12px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .claims-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 700px; /* ensures readability on small devices, scrollable */
+        }
+
+        .claims-table th {
+            text-align: left;
+            padding: 16px 16px;
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .claims-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #ecf3f9;
+            color: #1f2937;
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            background: #fef9c3;
+            color: #854d0e;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .doc-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            border-top: 1px solid #eef2ff;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 48px;
+            color: #64748b;
+        }
+
+        .alert-msg {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-radius: 14px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        /* ========== MOBILE & TABLET RESPONSIVE ========== */
+        @media (max-width: 880px) {
+            .claim-content {
+                padding: 16px 18px;
+            }
+            .form-grid {
+                padding: 20px;
+                gap: 18px;
+            }
+            .card-header {
+                padding: 14px 20px;
+            }
+            .table-toolbar {
+                padding: 16px 20px;
+            }
+            .btn-update {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Stack dashboard vertically, sidebar becomes top scrollable navbar */
+            .dashboard {
+                flex-direction: column;
+                height: 100vh;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 8px 12px;
+                background: #0f172b;
+                border-bottom: 1px solid #1e2a44;
+                flex-shrink: 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+
+            .logo-area {
+                display: none; /* hide logo to save space, can be shown via nav but compact */
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                gap: 8px;
+                padding: 6px 4px;
+                overflow-x: auto;
+                white-space: nowrap;
+                flex-wrap: nowrap;
+                scrollbar-width: thin;
+            }
+
+            .nav-item {
+                padding: 10px 14px;
+                font-size: 13px;
+                gap: 8px;
+                white-space: nowrap;
+            }
+
+            .nav-item i {
+                font-size: 1rem;
+            }
+
+            .nav-item span {
+                font-size: 12px;
+            }
+
+            .main-panel {
+                overflow-y: auto;
+            }
+
+            .top-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 14px 20px;
+            }
+
+            .sip-card {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            .input-group {
+                width: 100%;
+            }
+
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .entries-select {
+                justify-content: space-between;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .pagination {
+                justify-content: center;
+            }
+        }
+
+        /* Extra small devices (<=480px) */
+        @media (max-width: 480px) {
+            .claim-content {
+                padding: 12px;
+            }
+            .card-header h2 {
+                font-size: 1.2rem;
+            }
+            .claims-table th, .claims-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+            .btn-update {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+            .sip-amount {
+                font-size: 18px;
+            }
+            .user-greeting h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+
+
+    <!-- main panel -->
+    <div class="main-panel">
+        <div class="top-header">
+            <div class="user-greeting">
+                <h3><span id="loggedAgentName">Agent Name</span></h3>
+                <p>Agent · Join Date: 21-08-2024 15:28:33</p>
+            </div>
+    
+        </div>
+
+    
+        <div class="claim-content" id="claimContentArea">
+            <!-- dynamic claim section: form + table exactly as 3 images combined -->
+            <div id="claimViewWrapper">
+                <!-- form card (first image style) -->
+                <div class="card animate.card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-plus-circle"></i> New Mediclaim Request</h2>
+                    </div>
+                    <div class="form-grid" id="claimForm">
+                        <div class="input-group">
+                            <label>Hospital Name *</label>
+                            <input type="text" id="hospitalName" placeholder="e.g., Apollo Hospitals" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Hospital Contact No</label>
+                            <input type="tel" id="hospitalContact" placeholder="+91 9876543210">
+                        </div>
+                        <div class="input-group">
+                            <label>Mediciam Type *</label>
+                            <select id="mediciamType">
+                                <option value="">--Select Type--</option>
+                                <option value="Hospitalization">Hospitalization</option>
+                                <option value="Domiciliary">Domiciliary</option>
+                                <option value="Pre-hospitalization">Pre-hospitalization</option>
+                                <option value="Post-hospitalization">Post-hospitalization</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Treatment Types *</label>
+                            <input type="text" id="treatmentTypes" placeholder="e.g., Surgery / Consultation" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Date of Admission</label>
+                            <input type="date" id="admissionDate">
+                        </div>
+                        <div class="input-group">
+                            <label>Date of Discharge</label>
+                            <input type="date" id="dischargeDate">
+                        </div>
+                        <div class="input-group">
+                            <label>Total Expense (₹)</label>
+                            <input type="number" id="totalExpense" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Upload Documents (PDF)</label>
+                            <input type="file" id="claimDocument" accept="application/pdf">
+                            <div class="file-hint">
+                                <i class="fas fa-file-pdf"></i> Intimation Letter, bills and medical report in single PDF (Max 1 MB)
+                            </div>
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <button class="btn-update" id="submitClaimBtn"><i class="fas fa-upload"></i> Update & Submit Claim</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claims history table (second & third image style) -->
+                <div class="card animate-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> My Claims History</h2>
+                    </div>
+                    <div class="table-toolbar">
+                        <div class="entries-select">
+                            <span>Show</span>
+                            <select id="entriesPerPage">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                            </select>
+                            <span>entries</span>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="tableSearch" placeholder="Search by hospital, treatment...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="claims-table" id="claimsTable">
+                            <thead>
+                                <tr>
+                                    <th>Hospital Name</th>
+                                    <th>Treatment Types</th>
+                                    <th>Date of Admission</th>
+                                    <th>Date of Discharge</th>
+                                    <th>Total Expense (₹)</th>
+                                    <th>Document</th>
+                                    <th>Medication Status</th>
+                                    <th>Request Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="claimsTableBody">
+                                <!-- dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="paginationControls">
+                        <button id="prevPageBtn" disabled>Previous</button>
+                        <span id="pageInfo">Page 1 of 1</span>
+                        <button id="nextPageBtn" disabled>Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- dummy initial data (matching style of images) ----------
+    let claimsData = [];
+
+    // helper to format date from YYYY-MM-DD to DD-MM-YYYY for display
+    function formatDateForDisplay(dateStr) {
+        if (!dateStr) return "-";
+        let parts = dateStr.split("-");
+        if(parts.length !== 3) return dateStr;
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    function toDisplayDate(dateIso) {
+        if(!dateIso) return '-';
+        let [year, month, day] = dateIso.split('-');
+        return `${day}-${month}-${year}`;
+    }
+
+    function getTodayFormatted() {
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2,'0');
+        let mm = String(today.getMonth()+1).padStart(2,'0');
+        let yyyy = today.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+    }
+
+    // Global pagination & search state
+    let currentPage = 1;
+    let pageSize = 10;
+    let searchTerm = "";
+
+    function getFilteredClaims() {
+        if (!searchTerm.trim()) return [...claimsData];
+        const term = searchTerm.toLowerCase();
+        return claimsData.filter(claim => 
+            claim.hospitalName.toLowerCase().includes(term) ||
+            claim.treatmentTypes.toLowerCase().includes(term) ||
+            claim.medicationStatus.toLowerCase().includes(term) ||
+            (claim.documentName && claim.documentName.toLowerCase().includes(term))
+        );
+    }
+
+    async function loadClaimsHistory() {
+  try {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!user) return;
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("https://punyamitra-backend.onrender.com/get-claims", {
+    headers: {
+        Authorization: "Bearer " + token
+    }
+    });
+
+    claimsData = data.claims || [];
+    renderTable();
+
+  } catch (err) {
+    console.error(err);
+    showMessage("Failed to load claims");
+  }
+}
+    function renderTable() {
+        const filtered = getFilteredClaims();
+        const totalEntries = filtered.length;
+        const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = filtered.slice(start, end);
+        
+        const tbody = document.getElementById("claimsTableBody");
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="no-data">No claim records found. Submit a new claim.</td></tr>`;
+        } else {
+            tbody.innerHTML = pageData.map(claim => {
+                let docHtml = "-";
+
+                if (claim.documentPath) {
+                    docHtml = `<a class="doc-link" href="https://punyamitra-backend.onrender.com/${claim.documentPath}" target="_blank">
+                                <i class="fas fa-file-pdf"></i> View PDF
+                            </a>`;
+                } 
+                else if (claim.documentName) {
+                    docHtml = `<span class="doc-link">📄 ${claim.documentName}</span>`;
+                }
+                
+                return `<tr>
+                            <td>${escapeHtml(claim.hospitalName)}</td>
+                            <td>${escapeHtml(claim.treatmentTypes)}</td>
+                            <td>${toDisplayDate(claim.admissionDate) || '-'}</td>
+                            <td>${toDisplayDate(claim.dischargeDate) || '-'}</td>
+                            <td>₹${Number(claim.totalExpense).toLocaleString('en-IN')}</td>
+                            <td>${docHtml}</td>
+                            <td><span class="status-badge">${escapeHtml(claim.medicationStatus)}</span></td>
+                            <td>${escapeHtml(claim.requestDate)}</td>
+                         </tr>`;
+            }).join('');
+        }
+        
+        const totalPagesShow = Math.ceil(getFilteredClaims().length / pageSize) || 1;
+        document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPagesShow}`;
+        document.getElementById("prevPageBtn").disabled = currentPage === 1;
+        document.getElementById("nextPageBtn").disabled = currentPage === totalPagesShow;
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;});}
+    
+    function updatePaginationAndRender() {
+        currentPage = 1;
+        renderTable();
+    }
+
+    // event listeners
+    document.getElementById("prevPageBtn").addEventListener("click", () => {
+        if (currentPage > 1) { currentPage--; renderTable(); }
+    });
+    document.getElementById("nextPageBtn").addEventListener("click", () => {
+        const totalPages = Math.ceil(getFilteredClaims().length / pageSize);
+        if (currentPage < totalPages) { currentPage++; renderTable(); }
+    });
+    document.getElementById("entriesPerPage").addEventListener("change", (e) => {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1;
+        renderTable();
+    });
+    document.getElementById("tableSearch").addEventListener("input", (e) => {
+        searchTerm = e.target.value;
+        currentPage = 1;
+        renderTable();
+    });
+    
+    function showMessage(msg, isError = true) {
+        let msgDiv = document.querySelector(".alert-msg");
+        if(!msgDiv){
+            msgDiv = document.createElement("div");
+            msgDiv.className = "alert-msg";
+            const formCard = document.querySelector(".card");
+            if(formCard) formCard.parentNode.insertBefore(msgDiv, formCard);
+            else document.querySelector(".claim-content").prepend(msgDiv);
+        }
+        msgDiv.innerHTML = `<i class="fas fa-${isError ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
+        msgDiv.style.display = "block";
+        setTimeout(() => { msgDiv.style.display = "none"; }, 3500);
+    }
+
+    // add new claim logic
+    document.getElementById("submitClaimBtn").addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const hospitalName = document.getElementById("hospitalName").value.trim();
+    const hospitalContact = document.getElementById("hospitalContact").value.trim();
+    const mediciamType = document.getElementById("mediciamType").value;
+    const treatmentTypes = document.getElementById("treatmentTypes").value.trim();
+    const admissionDate = document.getElementById("admissionDate").value;
+    const dischargeDate = document.getElementById("dischargeDate").value;
+    const totalExpense = parseFloat(document.getElementById("totalExpense").value);
+    const fileInput = document.getElementById("claimDocument");
+
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!user || !user._id) {
+    showMessage("User login data missing");
+    return;
+}
+
+    if (!hospitalName || !treatmentTypes || !mediciamType || !totalExpense) {
+        showMessage("Please fill all required fields");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("hospitalName", hospitalName);
+    formData.append("hospitalContact", hospitalContact);
+    formData.append("mediclaimType", mediciamType);
+    formData.append("treatmentTypes", treatmentTypes);
+    formData.append("admissionDate", admissionDate);
+    formData.append("dischargeDate", dischargeDate);
+    formData.append("totalExpense", totalExpense);
+
+    if (fileInput.files[0]) {
+        formData.append("claimDocument", fileInput.files[0]);
+    }
+
+    try {
+   const token = localStorage.getItem("token");
+
+    const res = await fetch("https://punyamitra-backend.onrender.com/submit-claim", {
+    method: "POST",
+    headers: {
+        Authorization: "Bearer " + token
+    },
+    body: formData
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        showMessage("Claim submitted successfully", false);
+
+        document.querySelectorAll("#claimForm input, #claimForm select")
+        .forEach(el => el.value = "");
+
+        loadClaimsHistory();
+    } else {
+        showMessage("Submission failed");
+    }
+
+    } catch (error) {
+    console.error(error);
+    showMessage("Server error");
+    }
+});
+
+  loadClaimsHistory();
+    
+    // Sidebar active highlight + demo behavior
+    const applyBtn = document.getElementById("applyClaimNavBtn");
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach(item => {
+        item.addEventListener("click", function() {
+            navItems.forEach(nav => nav.classList.remove("active"));
+            this.classList.add("active");
+            if (this.id === "applyClaimNavBtn" || this.querySelector("span")?.innerText === "Apply Claim") {
+                document.getElementById("claimViewWrapper").scrollIntoView({ behavior: "smooth" });
+            } else {
+                showMessage(`🔔 "${this.querySelector('span')?.innerText || 'section'}" is under development. Apply Claim page is fully functional.`, false);
+            }
+        });
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const agent = JSON.parse(localStorage.getItem("agentData"));
+    const loggedName = document.getElementById("loggedAgentName");
+
+    if (agent && loggedName) {
+        loggedName.textContent = agent.name || "Agent Name";
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Master Dashboard</title>
+<style>
+body{
+  font-family:Arial,sans-serif;
+  margin:0;
+  background:#f5f7fa;
+}
+.topbar{
+  background:#2b95d6;
+  color:white;
+  padding:15px 20px;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{
+  padding:20px;
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  margin-bottom:25px;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+.card h2{
+  margin:0;
+  color:#0b4f3c;
+}
+.card p{
+  margin-top:8px;
+  color:#555;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:10px;
+  overflow:hidden;
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+th{
+  background:#eef2f6;
+}
+.section-title{
+  margin:25px 0 10px;
+  font-size:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" style="display:flex;justify-content:space-between;align-items:center;">
+  <span>PMF Admin Master Dashboard</span>
+  <button onclick="logout()" style="padding:6px 12px;border:none;border-radius:6px;cursor:pointer;">
+    Logout
+  </button>
+</div>
+
+<div class="container">
+
+  <!-- ✅ Analytics Cards -->
+  <div class="cards">
+    <div class="card">
+      <h2 id="totalAgents">0</h2>
+      <p>Total Agents</p>
+    </div>
+    <div class="card">
+      <h2 id="totalStudents">0</h2>
+      <p>Total Students</p>
+    </div>
+    <div class="card">
+      <h2 id="totalFarmers">0</h2>
+      <p>Total Farmers</p>
+    </div>
+    <div class="card">
+      <h2 id="pendingStudents">0</h2>
+      <p>Pending Students</p>
+    </div>
+    <div class="card">
+      <h2 id="pendingFarmers">0</h2>
+      <p>Pending Farmers</p>
+    </div>
+    <div class="card">
+      <h2 id="renewals">0</h2>
+      <p>Renewals Due</p>
+    </div>
+  </div>
+    <!-- ✅ Quick Actions -->
+    <div style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+    <button onclick="location.href='dashboard.html'">Approval Dashboard</button>
+    <button onclick="location.href='approved-enrollment.html'">Student Approved</button>
+    <button onclick="location.href='farmer-approved-enrollment.html'">Farmer Approved</button>
+    <button onclick="location.href='farmer-dashboard.html'">Farmer Dashboard</button>
+    </div>
+
+  <!-- ✅ Agent-wise Performance -->
+  <div class="section-title">Agent Wise Performance</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Agent Name</th>
+        <th>Agent ID</th>
+        <th>Total Students</th>
+        <th>Total Farmers</th>
+      </tr>
+    </thead>
+    <tbody id="agentTableBody"></tbody>
+  </table>
+
+  <div class="section-title">Latest Activity</div>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Name</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="activityBody"></tbody>
+</table>
+
+<div class="section-title">System Logs</div>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Action</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="logBody">
+    <tr>
+      <td colspan="4">Loading logs...</td>
+    </tr>
+  </tbody>
+</table>
+
+
+</div>
+
+<script>
+const API = "https://punyamitra-backend.onrender.com";
+
+async function loadDashboardStats() {
+  const res = await fetch(`${API}/admin-dashboard-stats`);
+  const data = await res.json();
+
+  document.getElementById("totalStudents").textContent = data.totalStudents || 0;
+  document.getElementById("totalFarmers").textContent = data.totalFarmers || 0;
+  document.getElementById("pendingStudents").textContent = data.pendingStudents || 0;
+  document.getElementById("pendingFarmers").textContent = data.pendingFarmers || 0;
+  document.getElementById("renewals").textContent =
+    (data.renewedStudents || 0) + (data.renewedFarmers || 0);
+}
+
+async function loadAgents() {
+  const res = await fetch(`${API}/agents`);
+  const agents = await res.json();
+
+  document.getElementById("totalAgents").textContent = agents.length;
+
+  const tbody = document.getElementById("agentTableBody");
+  tbody.innerHTML = "";
+
+  for (const agent of agents) {
+    const res2 = await fetch(`${API}/agent/${agent.agent_id}`);
+    const details = await res2.json();
+
+    tbody.innerHTML += `
+    <tr onclick="openAgent('${agent.agent_id}')" style="cursor:pointer;">
+        <td>${agent.name}</td>
+        <td>${agent.agent_id}</td>
+        <td>${details.students.length}</td>
+        <td>${details.farmers.length}</td>
+    </tr>
+    `;
+  }
+}
+function openAgent(agentId) {
+  localStorage.setItem("selectedAgentId", agentId);
+  window.location.href = "admin-agent-details.html";
+}
+async function loadLatestActivity() {
+  const studentRes = await fetch(`${API}/admin-dashboard-stats`);
+  const stats = await studentRes.json();
+
+  const tbody = document.getElementById("activityBody");
+
+  tbody.innerHTML = `
+    <tr>
+      <td>Students</td>
+      <td>Total</td>
+      <td>${stats.totalStudents}</td>
+    </tr>
+    <tr>
+      <td>Farmers</td>
+      <td>Total</td>
+      <td>${stats.totalFarmers}</td>
+    </tr>
+    <tr>
+      <td>Pending Students</td>
+      <td>Approval</td>
+      <td>${stats.pendingStudents}</td>
+    </tr>
+    <tr>
+      <td>Pending Farmers</td>
+      <td>Approval</td>
+      <td>${stats.pendingFarmers}</td>
+    </tr>
+  `;
+}
+
+async function loadLogs() {
+  try {
+    const res = await fetch(`${API}/admin-logs`);
+    const logs = await res.json();
+
+    const tbody = document.getElementById("logBody");
+    tbody.innerHTML = "";
+
+    if (!logs.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4">No logs found</td>
+        </tr>
+      `;
+      return;
+    }
+
+    logs.forEach(log => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${log.name || "-"}</td>
+          <td>${log.role || "-"}</td>
+          <td>${log.action || "-"}</td>
+          <td>${new Date(log.time).toLocaleString()}</td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Failed to load logs:", error);
+  }
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "admin-login.html";
+}
+
+loadDashboardStats();
+loadAgents();
+loadLatestActivity();
+loadLogs();
+
+setInterval(() => {
+  loadDashboardStats();
+  loadAgents();
+  loadLatestActivity();
+  loadLogs();
+}, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Punyamitra - Agent Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ✅ SINGLE AGENT BACKGROUND */
+body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef') no-repeat center/cover;
+}
+
+/* CONTAINER */
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* HEADER */
+.header {
+    background: #f5f5f5;
+    text-align: center;
+    padding: 30px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+    max-width: 80px;
+    margin-bottom: 15px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    color: #1b5e20;
+    font-weight: 600;
+}
+
+.header p {
+    color: #555;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* FORM */
+.login-card {
+    padding: 30px 25px;
+}
+
+.login-card h2 {
+    text-align: center;
+    color: #2e7d32;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: 0.2s;
+}
+
+input:focus {
+    border-color: #2e7d32;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
+}
+
+/* PASSWORD TOGGLE */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* OPTIONS */
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.forgot-link {
+    color: #2e7d32;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* BUTTON */
+.login-btn {
+    width: 100%;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #1b5e20;
+}
+
+/* REGISTER */
+.register {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.register a {
+    color: #2e7d32;
+    text-decoration: none;
+}
+
+.register a:hover {
+    text-decoration: underline;
+}
+
+/* FOOTER */
+footer {
+    background: #f9f9f9;
+    text-align: center;
+    padding: 15px;
+    font-size: 0.8rem;
+    color: #777;
+    border-top: 1px solid #eee;
+}
+
+footer a {
+    color: #2e7d32;
+    text-decoration: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+    .container {
+        max-width: 100%;
+    }
+    .login-card {
+        padding: 20px;
+    }
+    .options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <img src="punyamitra.jpeg" alt="Logo" class="logo">
+        <h1>Punyamitra Agent Portal</h1>
+        <p>Empowering Field Agents</p>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="login-card">
+        <h2>Agent Login</h2>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Agent ID / Registered Mobile No.</label>
+                <input type="text" id="agentId" placeholder="e.g., AG123456 or 9876543210" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            </div>
+
+            <div class="options">
+                <label class="remember">
+                    <input type="checkbox"> Remember Me
+                </label>
+                <a href="#" class="forgot-link">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        <div class="register">
+            <p>New agent? <a href="#">Register here</a></p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 Punyamitra | <a href="#">Privacy Policy</a> | <a href="#">Help Desk</a></p>
+    </footer>
+
+</div>
+
+<script>
+function togglePassword() {
+    const pwd = document.getElementById('password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const agentId = document.getElementById('agentId').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!agentId || !password) {
+        alert("Please fill in both fields.");
+        return;
+    }
+
+    try {
+        const response = await fetch("https://punyamitra-backend.onrender.com/agent-login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                agentId: agentId,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        console.log("LOGIN RESPONSE:", data);
+
+       if (data.success) {
+        localStorage.setItem("agentId", data.agent.agentId);
+        localStorage.setItem("agentName", data.agent.name);
+
+        window.location.href = "agent-role-select.html";
+        } else {
+            alert("Invalid Agent ID or Password");
+        }
+
+    } catch (error) {
+        console.error("Agent login failed:", error);
+        alert("Server connection failed");
+    }
+});
+</script>
+
+</body>
+</html>

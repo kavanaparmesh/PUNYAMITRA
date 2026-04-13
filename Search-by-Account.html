@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search by Punya Mitra Account</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* TOP BAR */
+.topbar {
+  background: #2b95d6;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+}
+
+.back-btn {
+  text-decoration: none;
+  background: #0b4f3c;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* BODY */
+body {
+  background: #f5f7fa;
+}
+
+/* SEARCH SECTION */
+.container {
+  margin: 20px;
+  background: #eef2f6;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* SEARCH ROW */
+.search-row {
+  display: flex;
+  gap: 10px;
+}
+
+.search-row input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-row button {
+  background: #2b95d6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* RESULT */
+#result {
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #f1f1f1;
+}
+
+.error { color: red; }
+.empty { color: gray; }
+</style>
+</head>
+
+<body>
+  
+  <!-- ✅ HEADER -->
+<div class="topbar">
+  <div class="logo">PMF</div>
+  <a href="student-dashboard.html" class="back-btn">⬅ Back</a>
+</div>
+
+<!-- ✅ SEARCH AREA -->
+<div class="container">
+
+  <label>Search by Punya Mitra Account</label>
+
+  <div class="search-row">
+    <input type="text" id="accountNo" placeholder="Enter Account Number">
+    <button onclick="searchAccount()">Search</button>
+  </div>
+
+  <div id="result"></div>
+
+</div>
+
+<script>
+async function searchAccount() {
+  const accountNo = document.getElementById("accountNo").value.trim();
+  const resultDiv = document.getElementById("result");
+
+  if (!accountNo) {
+    resultDiv.innerHTML = "<p class='error'>Enter account number</p>";
+    return;
+  }
+
+  resultDiv.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`https://punyamitra-backend.onrender.com/api/card/punya/${accountNo}`);
+    const data = await res.json();
+
+    if (!data.success || !data.student) {
+      resultDiv.innerHTML = "<p class='empty'>No record found</p>";
+      return;
+    }
+
+    const d = data.student;
+
+   resultDiv.innerHTML = `
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Mobile</th>
+      <th>Status</th>
+      <th>PM Account</th>
+    </tr>
+    <tr>
+      <td>${d.fullname || "-"}</td>
+      <td>${d.phone || "-"}</td>
+      <td>${d.status || "Active"}</td>
+      <td>${d.pmAccountNo || "-"}</td>
+    </tr>
+  </table>
+`;
+
+  } catch (err) {
+    console.error(err);
+    resultDiv.innerHTML = "<p class='error'>Server error</p>";
+  }
+}
+</script>
+</body>
+</html>
