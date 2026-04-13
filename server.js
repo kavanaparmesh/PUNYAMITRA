@@ -17,8 +17,8 @@ if (!fs.existsSync(uploadPath)) {
 const Razorpay = require("razorpay");
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY || "test_key",
-  key_secret: process.env.RAZORPAY_SECRET || "test_secret"
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 const app = express();
@@ -418,7 +418,7 @@ const Student = mongoose.model("Student", StudentSchema);
 // ✅ Student Login Route
 app.post("/student-login", async (req, res) => {
   try {
-    const bcrypt = require("bcryptjs");
+    const bcrypt = require("./node_modules/bcryptjs/umd");
 
 const { studentId, password } = req.body;
 
@@ -504,7 +504,10 @@ app.post("/save-enrollment", async (req, res) => {
         area: req.body.area,
         state: req.body.state
       },
-      { returnDocument: "after" }
+     {
+      new: true,
+      upsert: true
+    }
     );
 
     res.json({ success: true, student });

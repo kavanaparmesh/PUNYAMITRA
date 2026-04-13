@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const LoginLog = require("../models/LoginLog");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("../node_modules/bcryptjs/umd");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
