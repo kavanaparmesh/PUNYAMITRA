@@ -834,6 +834,40 @@ app.get('/students', async (req, res) => {
 
 });
 
+// DELETE STUDENT
+app.delete('/students/:id', async (req, res) => {
+
+    try {
+
+        const deletedStudent =
+            await Student.findByIdAndDelete(req.params.id);
+
+        if (!deletedStudent) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            message: "Student deleted successfully"
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Delete failed"
+        });
+
+    }
+
+});
 
 // ✅ verify-student-password
 app.post("/verify-student-password", async (req, res) => {
@@ -954,6 +988,40 @@ app.get('/farmers', async (req, res) => {
 
 });
 
+// DELETE FARMER
+app.delete('/farmers/:id', async (req, res) => {
+
+    try {
+
+        const deletedFarmer =
+            await Farmer.findByIdAndDelete(req.params.id);
+
+        if (!deletedFarmer) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Farmer not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            message: "Farmer deleted successfully"
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Delete failed"
+        });
+
+    }
+
+});
 
 // ✅ Farmer Login Route
 app.post("/farmer-login", async (req, res) => {
