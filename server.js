@@ -44,7 +44,14 @@ function auth(req, res, next) {
   }
 }
 app.use(cors());
-app.use(express.json());
+app.use(express.json({
+    limit: '50mb'
+}));
+
+app.use(express.urlencoded({
+    limit: '50mb',
+    extended: true
+}));
 app.use("/uploads", express.static("uploads"));
 // ✅ NEW API ROUTES
 app.use("/api/auth", require("./routes/authRoutes"));
@@ -69,6 +76,88 @@ const ContactSchema = new mongoose.Schema({
 
 // ✅ Model
 const Contact = mongoose.model("Contact", ContactSchema);
+
+// ================= ADMIN PROFILE SCHEMA =================
+
+const AdminProfileSchema = new mongoose.Schema({
+
+  fullName: String,
+  email: String,
+  role: String,
+  photo: String
+
+});
+
+const AdminProfile = mongoose.model(
+  "AdminProfile",
+  AdminProfileSchema
+);
+
+// ================= GET ADMIN PROFILE =================
+
+app.get('/admin-profile', async (req, res) => {
+
+    res.json({
+        success: true,
+        profile: {
+            fullName: "Admin User",
+            email: "admin@punyamitra.org",
+            role: "Super Administrator",
+            photo: ""
+        }
+    });
+});
+
+app.post('/update-admin-profile', async (req, res) => {
+
+    console.log(req.body);
+
+    res.json({
+        success: true
+    });
+});
+
+// ================= UPDATE ADMIN PROFILE =================
+
+app.post("/update-admin-profile", async (req, res) => {
+
+  try {
+
+    const {
+      fullName,
+      email,
+      role,
+      photo
+    } = req.body;
+
+    let profile = await AdminProfile.findOne();
+
+    if (!profile) {
+
+      profile = new AdminProfile();
+    }
+
+    profile.fullName = fullName;
+    profile.email = email;
+    profile.role = role;
+    profile.photo = photo;
+
+    await profile.save();
+
+    res.json({
+      success: true,
+      profile
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
+});
 
 // ✅ Test route
 app.get("/", (req, res) => {
@@ -736,6 +825,16 @@ app.get("/student-dashboard-data/:agentId", async (req, res) => {
   }
 });
 
+app.get('/students', async (req, res) => {
+
+    const students = await Student.find()
+        .sort({ _id: -1 });
+
+    res.json(students);
+
+});
+
+
 // ✅ verify-student-password
 app.post("/verify-student-password", async (req, res) => {
   try {
@@ -844,6 +943,17 @@ app.post("/farmer-register", async (req, res) => {
     res.status(500).send("Error saving farmer");
   }
 });
+
+
+app.get('/farmers', async (req, res) => {
+
+    const farmers = await Farmer.find()
+        .sort({ _id: -1 });
+
+    res.json(farmers);
+
+});
+
 
 // ✅ Farmer Login Route
 app.post("/farmer-login", async (req, res) => {
@@ -1347,7 +1457,101 @@ app.put("/admin/reject-claim/:id", async (req, res) => {
   }
 });
 
+// ✅ volunteer section 
+const volunteerSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    role: String,
+    message: String,
+    joinDate: String
+});
 
+const Volunteer = mongoose.model('Volunteer', volunteerSchema);
+
+app.post('/api/volunteers', async (req, res) => {
+
+    try {
+
+        const volunteer = new Volunteer(req.body);
+
+        await volunteer.save();
+
+        res.json({
+            success: true,
+            message: 'Volunteer Saved Successfully'
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
+
+    }
+
+});
+
+// ✅ GET ALL VOLUNTEERS
+app.get('/api/volunteers', async (req, res) => {
+
+    try {
+
+        const volunteers = await Volunteer.find()
+            .sort({ _id: -1 });
+
+        res.json({
+            success: true,
+            volunteers
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+app.delete('/api/volunteers/:id', async (req, res) => {
+
+    try {
+
+        const deletedVolunteer =
+            await Volunteer.findByIdAndDelete(req.params.id);
+
+        if (!deletedVolunteer) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Volunteer not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            message: "Volunteer deleted successfully"
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+
+    }
+
+});
 
 // ✅ Donation Schema (ADD HERE)
 const DonationSchema = new mongoose.Schema({
