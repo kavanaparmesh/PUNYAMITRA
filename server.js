@@ -75,7 +75,9 @@ const ContactSchema = new mongoose.Schema({
 });
 
 // ✅ Model
-const Contact = mongoose.model("Contact", ContactSchema);
+const Contact =
+mongoose.models.Contact ||
+mongoose.model('Contact', ContactSchema);
 
 // ================= ADMIN PROFILE SCHEMA =================
 
@@ -88,34 +90,46 @@ const AdminProfileSchema = new mongoose.Schema({
 
 });
 
-const AdminProfile = mongoose.model(
-  "AdminProfile",
-  AdminProfileSchema
-);
+const AdminProfile =
+mongoose.models.AdminProfile ||
+mongoose.model('AdminProfile', AdminProfileSchema);
 
 // ================= GET ADMIN PROFILE =================
 
 app.get('/admin-profile', async (req, res) => {
 
-    res.json({
-        success: true,
-        profile: {
-            fullName: "Admin User",
-            email: "admin@punyamitra.org",
-            role: "Super Administrator",
-            photo: ""
+    try {
+
+        let profile = await AdminProfile.findOne();
+
+        if (!profile) {
+
+            profile = {
+                fullName: "Admin User",
+                email: "admin@punyamitra.org",
+                role: "Super Administrator",
+                photo: ""
+            };
         }
-    });
+
+        res.json({
+            success: true,
+            profile
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
 });
 
-app.post('/update-admin-profile', async (req, res) => {
 
-    console.log(req.body);
-
-    res.json({
-        success: true
-    });
-});
 
 // ================= UPDATE ADMIN PROFILE =================
 
@@ -189,14 +203,43 @@ app.post("/contact", async (req, res) => {
 
 // ✅ AGENT SCHEMA
 const AgentSchema = new mongoose.Schema({
-  agent_id: { type: String, unique: true },
+
+  agent_id: {
+    type: String,
+    unique: true
+  },
+
   name: String,
+
   email: String,
+
+  phone: String,
+
+  role: {
+    type: String,
+    default: "Agent"
+  },
+
   password: String,
-  status: { type: String, default: "active" }
+
+  status: {
+    type: String,
+    default: "active"
+  },
+
+  joinDate: {
+    type: String,
+    default: () =>
+      new Date()
+        .toISOString()
+        .split("T")[0]
+  }
+
 });
 
-const Agent = mongoose.model("Agent", AgentSchema);
+const Agent =
+mongoose.models.Agent ||
+mongoose.model('Agent', AgentSchema);
 
 // helper password
 function generatePassword(prefix) {
@@ -245,7 +288,7 @@ app.post("/agent-login", async (req, res) => {
 // ✅ create-agent
 app.post("/create-agent", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, phone } = req.body;
 
     const agentId = "AG" + Date.now();
     const password = "AG" + Math.floor(1000 + Math.random() * 9000);
@@ -254,6 +297,7 @@ app.post("/create-agent", async (req, res) => {
       agent_id: agentId,
       name,
       email,
+      phone,
       password
     });
 
@@ -288,6 +332,40 @@ app.get("/dashboard-summary", async (req, res) => {
   } catch (error) {
     res.status(500).send("Dashboard summary failed");
   }
+});
+
+
+// ✅ update agents
+app.put("/update-agent/:id", async (req, res) => {
+
+  try {
+
+    const updatedAgent =
+      await Agent.findByIdAndUpdate(
+
+        req.params.id,
+
+        req.body,
+
+        { new: true }
+
+      );
+
+    res.json({
+      success: true,
+      agent: updatedAgent
+    });
+
+  } catch(error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+
+  }
+
 });
 
 // ✅ Get all agents
@@ -358,17 +436,28 @@ app.put("/reset-agent-password/:agentId", async (req, res) => {
 });
 
 // ✅ Delete agent
-app.delete("/delete-agent/:agentId", async (req, res) => {
+app.delete("/delete-agent/:id", async (req, res) => {
+
   try {
-    await Agent.findOneAndDelete({
-      agent_id: req.params.agentId
+
+    await Agent.findByIdAndDelete(
+      req.params.id
+    );
+
+    res.json({
+      success: true
     });
 
-    res.json({ success: true });
-
   } catch (error) {
-    res.status(500).send("Delete failed");
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+
   }
+
 });
 
 // ✅ Admin Login Route
@@ -382,7 +471,7 @@ app.post("/admin-login", async (req, res) => {
     action: "Logged In"
   });
     // temporary static admin
-    if (adminId === "admin" && password === "123456") {
+    if (adminId === "adminpunyamitra" && password === "Pm@secure#2004") {
       return res.json({
         message: "Admin login successful",
         admin: {
@@ -399,6 +488,14 @@ app.post("/admin-login", async (req, res) => {
     res.status(500).send("Admin login failed");
   }
 });
+
+
+
+// ✅ contact Routes
+app.use(
+  "/api/contact",
+  require("./routes/contactRoutes")
+);
 
 // ✅ Admin Dashboard Stats
 app.get("/admin-dashboard-stats", async (req, res) => {
@@ -485,6 +582,7 @@ const StudentSchema = new mongoose.Schema({
   fullname: String,
   email: String,
   phone: String,
+  date: String,
   aadhaar: String,
   dob: String,
   course: String,
@@ -502,12 +600,14 @@ const StudentSchema = new mongoose.Schema({
   
 });
 
-const Student = mongoose.model("Student", StudentSchema);
+const Student =
+mongoose.models.Student ||
+mongoose.model('Student', StudentSchema);
 
 // ✅ Student Login Route
 app.post("/student-login", async (req, res) => {
   try {
-    const bcrypt = require("./node_modules/bcryptjs/umd");
+    const bcrypt = require("bcryptjs");
 
 const { studentId, password } = req.body;
 
@@ -869,6 +969,50 @@ app.delete('/students/:id', async (req, res) => {
 
 });
 
+// UPDATE STUDENT
+app.put('/students/:id', async (req, res) => {
+
+    try {
+
+        const updatedStudent =
+            await Student.findByIdAndUpdate(
+
+                req.params.id,
+
+                req.body,
+
+                { new: true }
+
+            );
+
+        if (!updatedStudent) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            student: updatedStudent
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Update failed"
+        });
+
+    }
+
+});
+
+
 // ✅ verify-student-password
 app.post("/verify-student-password", async (req, res) => {
   try {
@@ -931,6 +1075,7 @@ const FarmerSchema = new mongoose.Schema({
   dob: String,
   address: String,
   farmSize: String,
+  land: String,
   crop: String,
   aadhaar: String,
   pmAccountNo: String,
@@ -944,7 +1089,9 @@ const FarmerSchema = new mongoose.Schema({
   paymentStatus: String
 });
 
-const Farmer = mongoose.model("Farmer", FarmerSchema);
+const Farmer =
+mongoose.models.Farmer ||
+mongoose.model('Farmer', FarmerSchema);
 
 // ✅ Farmer Registration Route
 app.post("/farmer-register", async (req, res) => {
@@ -1017,6 +1164,55 @@ app.delete('/farmers/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Delete failed"
+        });
+
+    }
+
+});
+
+// UPDATE FARMER
+app.put('/farmers/:id', async (req, res) => {
+
+    try {
+
+        const updatedFarmer =
+            await Farmer.findByIdAndUpdate(
+
+                req.params.id,
+
+                {
+                    fullname: req.body.fullname,
+                    email: req.body.email,
+                    phone: req.body.phone,
+                    land: req.body.land,
+                    crop: req.body.crop
+                },
+
+                { new: true }
+
+            );
+
+        if (!updatedFarmer) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Farmer not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            farmer: updatedFarmer
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Update failed"
         });
 
     }
@@ -1529,12 +1725,15 @@ app.put("/admin/reject-claim/:id", async (req, res) => {
 const volunteerSchema = new mongoose.Schema({
     name: String,
     email: String,
+    phone: String,
     role: String,
     message: String,
     joinDate: String
 });
 
-const Volunteer = mongoose.model('Volunteer', volunteerSchema);
+const Volunteer =
+mongoose.models.Volunteer ||
+mongoose.model('Volunteer', volunteerSchema);
 
 app.post('/api/volunteers', async (req, res) => {
 
@@ -1569,6 +1768,8 @@ app.get('/api/volunteers', async (req, res) => {
 
         const volunteers = await Volunteer.find()
             .sort({ _id: -1 });
+
+        console.log("VOLUNTEERS:", volunteers);
 
         res.json({
             success: true,
@@ -1621,6 +1822,57 @@ app.delete('/api/volunteers/:id', async (req, res) => {
 
 });
 
+// ✅ UPDATE VOLUNTEER
+app.put('/api/volunteers/:id', async (req, res) => {
+
+    try {
+
+        const updatedVolunteer =
+            await Volunteer.findByIdAndUpdate(
+
+                req.params.id,
+
+                {
+                    fullName: req.body.name,
+                    name: req.body.name,
+                    email: req.body.email,
+                    phone: req.body.phone,
+                    role: req.body.role,
+                    joinDate: req.body.joinDate
+                },
+
+                { new: true }
+
+            );
+
+        if (!updatedVolunteer) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Volunteer not found"
+            });
+
+        }
+
+        res.json({
+            success: true,
+            volunteer: updatedVolunteer
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Update failed"
+        });
+
+    }
+
+});
+
+
 // ✅ Donation Schema (ADD HERE)
 const DonationSchema = new mongoose.Schema({
   name: String,
@@ -1650,6 +1902,272 @@ app.get("/api/payment/donations", async (req, res) => {
   }
 });
 
+const memberSchema = new mongoose.Schema({
+
+    name: String,
+    email: String,
+    phone: String,
+    joinDate: String,
+    address: String
+
+});
+
+const Member =
+mongoose.models.Member ||
+mongoose.model(
+    'Member',
+    memberSchema
+);
+
+// GET MEMBERS
+app.get('/members', async (req, res) => {
+
+    const members = await Member.find();
+
+    res.json(members);
+
+});
+
+// ADD MEMBER
+app.post('/members', async (req, res) => {
+
+    try {
+
+        const member = new Member(req.body);
+
+        await member.save();
+
+        res.json({
+            success: true
+        });
+
+    } catch(error) {
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// UPDATE MEMBER
+app.put('/members/:id', async (req, res) => {
+
+    try {
+
+        await Member.findByIdAndUpdate(
+            req.params.id,
+            req.body
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch(error) {
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// DELETE MEMBER
+app.delete('/members/:id', async (req, res) => {
+
+    try {
+
+        await Member.findByIdAndDelete(
+            req.params.id
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch(error) {
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+
+// ✅ donations routes
+app.get('/donations', async (req, res) => {
+
+    const donations = await Donation.find();
+
+    res.json(donations);
+
+});
+
+app.post('/donations', async (req, res) => {
+
+    const donation = new Donation(req.body);
+
+    await donation.save();
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.put('/donations/:id', async (req, res) => {
+
+    await Donation.findByIdAndUpdate(
+        req.params.id,
+        req.body
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.delete('/donations/:id', async (req, res) => {
+
+    await Donation.findByIdAndDelete(
+        req.params.id
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
+const schemeSchema = new mongoose.Schema({
+
+    name: String,
+    description: String,
+    budget: String
+
+});
+
+const Scheme =
+mongoose.models.Scheme ||
+mongoose.model('Scheme', schemeSchema);
+(
+    'Scheme',
+    schemeSchema
+);
+
+// ✅ Schemes routes
+app.get('/schemes', async (req, res) => {
+
+    const schemes = await Scheme.find();
+
+    res.json(schemes);
+
+});
+
+app.post('/schemes', async (req, res) => {
+
+    const scheme = new Scheme(req.body);
+
+    await scheme.save();
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.put('/schemes/:id', async (req, res) => {
+
+    await Scheme.findByIdAndUpdate(
+        req.params.id,
+        req.body
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.delete('/schemes/:id', async (req, res) => {
+
+    await Scheme.findByIdAndDelete(
+        req.params.id
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
+const eventSchema = new mongoose.Schema({
+
+    name: String,
+    date: String,
+    location: String
+
+});
+
+const Event =
+mongoose.models.Event ||
+mongoose.model(
+    'Event',
+    eventSchema
+);
+
+// ✅ events routes
+app.get('/events', async (req, res) => {
+
+    const events = await Event.find();
+
+    res.json(events);
+
+});
+
+app.post('/events', async (req, res) => {
+
+    const event = new Event(req.body);
+
+    await event.save();
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.put('/events/:id', async (req, res) => {
+
+    await Event.findByIdAndUpdate(
+        req.params.id,
+        req.body
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
+app.delete('/events/:id', async (req, res) => {
+
+    await Event.findByIdAndDelete(
+        req.params.id
+    );
+
+    res.json({
+        success: true
+    });
+
+});
+
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
   res.status(500).json({
@@ -1657,6 +2175,15 @@ app.use((err, req, res, next) => {
     message: "Internal server error"
   });
 });
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
+
+});
+
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
