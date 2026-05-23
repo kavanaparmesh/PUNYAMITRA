@@ -91,6 +91,7 @@ input{
         <h3>Create New Agent</h3>
         <input type="text" id="agentName" placeholder="Agent Name">
         <input type="email" id="agentEmail" placeholder="Agent Email">
+        <input type="text" id="agentPhone" placeholder="Agent Phone">
         <button onclick="createAgent()">Create Agent</button>
     </div>
 
@@ -138,8 +139,7 @@ alert(
 document.getElementById("agentName").value = "";
 document.getElementById("agentEmail").value = "";
 
-await loadDashboard();
-showCreateForm();
+renderDashboard();
 }
 
 async function loadDashboard() {
@@ -149,7 +149,7 @@ async function loadDashboard() {
     document.getElementById('studentsCount').textContent = summary.totalStudents || 0;
     document.getElementById('farmersCount').textContent = summary.totalFarmers || 0;
 
-    const agents = await fetch("https://punyamitra-backend.onrender.com/agents").then(r => r.json());
+    const agents = await fetch("https://punyamitra-backend.onrender.com/api/agents").then(r => r.json());
 
     const list = document.getElementById('agentList');
     list.innerHTML = '';
@@ -235,12 +235,9 @@ async function approveStudent(studentId) {
     method: "PUT"
   });
 
-   alert("Student approved successfully");
 
   updateEnrollmentStatus(studentId, "Approved");
-
-  alert("Student approved successfully");
-  await loadDashboard();
+  await renderDashboard();
   if (currentAgentId) {
     viewAgent(currentAgentId);
   }
@@ -254,7 +251,7 @@ async function rejectStudent(studentId) {
   updateEnrollmentStatus(studentId, "Rejected");
 
   alert("Student rejected successfully");
-  await loadDashboard();
+  await renderDashboard();
   if (currentAgentId) {
     viewAgent(currentAgentId);
   }
@@ -270,7 +267,7 @@ async function approveFarmer(farmerId) {
 
   updateEnrollmentStatus(farmerId, "Approved");
 
-  await loadDashboard();
+  await renderDashboard();
   if (currentAgentId) {
     viewAgent(currentAgentId);
   }
@@ -282,14 +279,14 @@ async function rejectFarmer(id) {
 
   alert("Farmer rejected");
 
-  updateEnrollmentStatus(farmerId, "Rejected");
+ updateEnrollmentStatus(id, "Rejected");
 
-  await loadDashboard();
+  await renderDashboard();
   if (currentAgentId) {
     viewAgent(currentAgentId);
   }
 }
-loadDashboard();
+renderDashboard();
 </script>
 
 </body>

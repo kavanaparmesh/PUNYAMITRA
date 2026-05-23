@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pending Enrollment</title>
+<title>Document Pending</title>
 
 <style>
 body {
@@ -47,7 +47,7 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* TABLE CONTROLS */
+/* TABLE HEADER */
 .table-controls {
   display: flex;
   justify-content: space-between;
@@ -71,6 +71,7 @@ table {
 th, td {
   padding: 12px;
   border-bottom: 1px solid #eee;
+  text-align: left;
 }
 
 th {
@@ -112,8 +113,6 @@ th {
     gap: 8px;
   }
 }
-
-
 </style>
 </head>
 
@@ -123,10 +122,10 @@ th {
 
 <div class="container">
 
-  <div class="title">Pending Enrollment</div>
-  <div class="breadcrumb">Home - Enrollment - Pending Enrollment</div>
+  <div class="title">Doc Pending Enrollment</div>
+  <div class="breadcrumb">Home - Enrollment - Doc Pending Enrollment</div>
 
-  <div class="card">
+  <div class="card animate-card">
 
     <div class="table-controls">
       <div>Show 
@@ -141,11 +140,10 @@ th {
       </div>
     </div>
 
-    <table>
+    <table id="dataTable">
       <thead>
         <tr>
           <th>#</th>
-          <th>Acknowledgement No</th>
           <th>Student Name</th>
           <th>Mobile</th>
           <th>District</th>
@@ -156,7 +154,7 @@ th {
 
       <tbody id="tableBody">
         <tr>
-          <td colspan="7" class="empty">No data available in table</td>
+          <td colspan="6" class="empty">No data available in table</td>
         </tr>
       </tbody>
     </table>
@@ -171,53 +169,47 @@ th {
 
 <script>
 const tableBody = document.getElementById("tableBody");
+const agentId = localStorage.getItem("agentId");
 
-function generateAck(index) {
-  return "ACK" + (200000 + index);
-}
-
-async function loadPendingEnrollment() {
+async function loadStudentDocumentPending() {
   try {
-   const agentId = localStorage.getItem("agentId");
-
-    const response = await fetch(`https://punyamitra-backend.onrender.com/farmer-dashboard-data/${agentId}`);
+    const response = await fetch(`https://punyamitra-backend.onrender.com/student-dashboard-data/${agentId}`);
     const result = await response.json();
 
-    const data = (result.farmers || []).filter(
-    farmer => farmer.status === "Pending"
+    const students = (result.students || []).filter(
+      student => student.status === "Document Pending"
     );
+
     tableBody.innerHTML = "";
 
-    if (!data.length) {
+    if (!students.length) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="7" class="empty">No pending enrollments</td>
+          <td colspan="6" class="empty">No document pending students</td>
         </tr>
       `;
       return;
     }
 
-    data.forEach((item, index) => {
+    students.forEach((item, index) => {
       tableBody.innerHTML += `
         <tr>
           <td>${index + 1}</td>
-          <td>${item.farmer_id || generateAck(index)}</td>
-          <td>${item.name || "-"}</td>
-          <td>${item.mobile || "-"}</td>
+          <td>${item.fullname || "-"}</td>
+          <td>${item.phone || "-"}</td>
           <td>${item.district || "-"}</td>
-          <td>${item.date || "-"}</td>
-          <td>Pending</td>
+          <td>${item.registeredAt || "-"}</td>
+          <td>Document Pending</td>
         </tr>
       `;
     });
 
   } catch (error) {
-    console.error("Failed to load pending enrollments:", error);
+    console.error("Failed to load document pending students:", error);
   }
 }
 
-loadPendingEnrollment();
-
+// SEARCH FUNCTION
 document.getElementById("searchInput").addEventListener("keyup", function() {
   const value = this.value.toLowerCase();
   const rows = document.querySelectorAll("#tableBody tr");
@@ -226,6 +218,8 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
     row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
   });
 });
+
+loadStudentDocumentPending();
 </script>
 
 </body>
