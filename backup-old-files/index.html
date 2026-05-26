@@ -2185,10 +2185,11 @@ style="
     border:1px solid #ccc;
 "
 >
-
-<button <button type="button"
-onclick="payNow(document.getElementById('generalDonationAmount').value || 1)">onclick="payNow(document.getElementById('generalDonationAmount').value || 1)">
-    DONATE NOW
+<button
+type="button"
+class="btn-plan"
+onclick="payNow(document.getElementById('generalDonationAmount').value || 1)">
+DONATE NOW
 </button>
  
 
@@ -3091,7 +3092,7 @@ document.querySelectorAll(".animate-card, .benefit-card").forEach(el => {
 
       <!-- Payment confirmation checkbox -->
       <div class="payment-checkbox">
-        <input type="checkbox" id="paymentConfirmed">
+       <input type="checkbox" id="paymentConfirmed" disabled>
         <label for="paymentConfirmed">✅ I have completed the payment via UPI</label>
       </div>
 
@@ -3210,17 +3211,31 @@ document.querySelectorAll(".animate-card, .benefit-card").forEach(el => {
   });
 
   // Close modal
-  closeJoinModal.addEventListener("click", function () {
-    joinModal.classList.add("hidden");
-    document.body.style.overflow = "";
-  });
+  if (closeJoinModal) {
 
-  joinModal.addEventListener("click", function (e) {
-    if (e.target === joinModal) {
-      joinModal.classList.add("hidden");
-      document.body.style.overflow = "";
-    }
-  });
+    closeJoinModal.addEventListener("click", function () {
+
+        joinModal.classList.add("hidden");
+        document.body.style.overflow = "";
+
+    });
+
+}
+
+if (joinModal) {
+
+    joinModal.addEventListener("click", function (e) {
+
+        if (e.target === joinModal) {
+
+            joinModal.classList.add("hidden");
+            document.body.style.overflow = "";
+
+        }
+
+    });
+
+}
 
   // Listen to donation amount changes
   if (donationAmountInput) {

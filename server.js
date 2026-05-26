@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
 
 const uploadPath = path.join(__dirname, "uploads", "claims");
 
@@ -22,6 +23,12 @@ const razorpay = new Razorpay({
 });
 
 const app = express();
+
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage: storage
+});
 
 function auth(req, res, next) {
   try {
@@ -233,7 +240,15 @@ const AgentSchema = new mongoose.Schema({
       new Date()
         .toISOString()
         .split("T")[0]
-  }
+  },
+   dob: String,
+
+  aadharFile: String,
+
+  panFile: String,
+
+  photoFile: String
+
 
 });
 
@@ -286,9 +301,22 @@ app.post("/agent-login", async (req, res) => {
 });
 
 // ✅ create-agent
-app.post("/create-agent", async (req, res) => {
+app.post("/create-agent",
+upload.fields([
+  { name: "aadhaar", maxCount: 1 },
+  { name: "pan", maxCount: 1 },
+  { name: "photo", maxCount: 1 }
+]),
+async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const {
+  name,
+  email,
+  phone,
+  role,
+  dob,
+  joinDate
+} = req.body;
 
     const agentId = "AG" + Date.now();
     const password = "AG" + Math.floor(1000 + Math.random() * 9000);
@@ -298,7 +326,19 @@ app.post("/create-agent", async (req, res) => {
       name,
       email,
       phone,
-      password
+      password,
+      role,
+dob,
+joinDate,
+
+aadharFile:
+  req.files?.aadhaar?.[0]?.originalname || "",
+
+panFile:
+  req.files?.pan?.[0]?.originalname || "",
+
+photoFile:
+  req.files?.photo?.[0]?.originalname || ""
     });
 
     await newAgent.save();
@@ -1040,6 +1080,7 @@ app.post("/verify-student-password", async (req, res) => {
   }
 });
 
+
 // ✅ create-order
 app.post("/create-order", async (req, res) => {
   try {
@@ -1577,10 +1618,7 @@ app.get("/health-claim-list", async (req, res) => {
   }
 });
 
-// ✅ MULTER PDF UPLAOD
-const multer = require("multer");
-
-const storage = multer.diskStorage({
+const claimStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadPath);
     },
@@ -1590,7 +1628,9 @@ const storage = multer.diskStorage({
 });
 
 // ✅upload-claim
-const uploadClaim = multer({ storage });
+const uploadClaim = multer({
+  storage: claimStorage
+});
 
 // ✅claim-schema
 const claimSchema = new mongoose.Schema({
