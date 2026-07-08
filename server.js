@@ -44,17 +44,24 @@ const memberStorage = multer.diskStorage({
 
     destination: function(req, file, cb){
 
+        let uploadPath = "";
+
         if(file.fieldname === "aadhaar"){
-            cb(null, "uploads/members/aadhaar");
+            uploadPath = path.join(__dirname, "uploads", "members", "aadhaar");
         }
 
         else if(file.fieldname === "pan"){
-            cb(null, "uploads/members/pan");
+            uploadPath = path.join(__dirname, "uploads", "members", "pan");
         }
 
         else if(file.fieldname === "photo"){
-            cb(null, "uploads/members/photos");
+            uploadPath = path.join(__dirname, "uploads", "members", "photos");
         }
+
+        // Create folder automatically if it doesn't exist
+        fs.mkdirSync(uploadPath, { recursive: true });
+
+        cb(null, uploadPath);
 
     },
 
@@ -67,7 +74,6 @@ const memberStorage = multer.diskStorage({
 const memberUpload = multer({
     storage: memberStorage
 });
-
 
 const upload = multer({ storage });
 
@@ -2347,9 +2353,11 @@ app.delete('/events/:id', async (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
+
   res.status(500).json({
     success: false,
-    message: "Internal server error"
+    message: err.message,
+    stack: err.stack
   });
 });
 
