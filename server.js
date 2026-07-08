@@ -52,6 +52,35 @@ const upload = multer({
   storage
 });
 
+const memberStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+
+    let uploadPath = "";
+
+    if (file.fieldname === "aadhaar") {
+      uploadPath = path.join(__dirname, "uploads", "members", "aadhaar");
+    }
+    else if (file.fieldname === "pan") {
+      uploadPath = path.join(__dirname, "uploads", "members", "pan");
+    }
+    else if (file.fieldname === "photo") {
+      uploadPath = path.join(__dirname, "uploads", "members", "photos");
+    }
+
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath);
+  },
+
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "_" + file.originalname);
+  }
+});
+
+const memberUpload = multer({
+  storage: memberStorage
+});
+
 mongoose.connection.once("open", () => {
 });
 
@@ -327,9 +356,6 @@ photoFile:
     });
 
   } catch (error) {
-
- console.error("CREATE AGENT ERROR:", error);
-
     res.status(500).json({
         success: false,
         message: error.message
