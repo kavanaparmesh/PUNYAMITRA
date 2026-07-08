@@ -541,19 +541,35 @@ app.get("/agents", async (req, res) => {
 });
 
 // ✅ Agent wise students + farmers
+// ✅ Agent wise students + farmers
 app.get("/agent/:agentId", async (req, res) => {
   try {
-const agent = await Agent.findOne({
-  agent_id: req.params.agentId
-});
 
-console.log("Requested:", req.params.agentId);
-console.log("Found agent:", agent);
+    const agent = await Agent.findOne({
+      agent_id: req.params.agentId
+    });
+
+    console.log("Requested:", req.params.agentId);
+    console.log("Found agent:", agent);
+
     if (!agent) {
       return res.status(404).json({
         success: false,
         message: "Agent not found"
       });
+    }
+
+    // ✅ Fix old records that contain only filenames
+    if (agent.photoFile && !agent.photoFile.startsWith("/uploads")) {
+      agent.photoFile = "/uploads/agents/photos/" + agent.photoFile;
+    }
+
+    if (agent.aadharFile && !agent.aadharFile.startsWith("/uploads")) {
+      agent.aadharFile = "/uploads/agents/aadhaar/" + agent.aadharFile;
+    }
+
+    if (agent.panFile && !agent.panFile.startsWith("/uploads")) {
+      agent.panFile = "/uploads/agents/pan/" + agent.panFile;
     }
 
     const students = await Student.find({
