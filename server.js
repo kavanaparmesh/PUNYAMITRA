@@ -23,16 +23,24 @@ const razorpay = new Razorpay({
 });
 
 const app = express();
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+
+    let uploadPath = "";
+
     if (file.fieldname === "aadhaar") {
-      cb(null, "uploads/agents/aadhaar");
-    } else if (file.fieldname === "pan") {
-      cb(null, "uploads/agents/pan");
-    } else if (file.fieldname === "photo") {
-      cb(null, "uploads/agents/photos");
+      uploadPath = path.join(__dirname, "uploads", "agents", "aadhaar");
     }
+    else if (file.fieldname === "pan") {
+      uploadPath = path.join(__dirname, "uploads", "agents", "pan");
+    }
+    else if (file.fieldname === "photo") {
+      uploadPath = path.join(__dirname, "uploads", "agents", "photos");
+    }
+
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath);
   },
 
   filename: function (req, file, cb) {
@@ -40,85 +48,8 @@ const storage = multer.diskStorage({
   }
 });
 
-const memberStorage = multer.diskStorage({
-
-    destination: function(req, file, cb){
-
-        let uploadPath = "";
-
-        if(file.fieldname === "aadhaar"){
-            uploadPath = path.join(__dirname, "uploads", "members", "aadhaar");
-        }
-
-        else if(file.fieldname === "pan"){
-            uploadPath = path.join(__dirname, "uploads", "members", "pan");
-        }
-
-        else if(file.fieldname === "photo"){
-            uploadPath = path.join(__dirname, "uploads", "members", "photos");
-        }
-
-        // Create folder automatically if it doesn't exist
-        fs.mkdirSync(uploadPath, { recursive: true });
-
-        cb(null, uploadPath);
-
-    },
-
-    filename:function(req,file,cb){
-        cb(null, Date.now() + "_" + file.originalname);
-    }
-
-});
-
-const memberUpload = multer({
-    storage: memberStorage
-});
-
-const upload = multer({ storage });
-
-function auth(req, res, next) {
-  try {
-    const header = req.headers.authorization;
-
-    if (!header) {
-      return res.status(401).json({ success: false });
-    }
-
-    const token = header.split(" ")[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.userId = decoded.id;
-
-    next();
-
-  } catch (err) {
-    return res.status(401).json({ success: false });
-  }
-}
-app.use(cors());
-app.use(express.json({
-    limit: '50mb'
-}));
-
-app.use(express.urlencoded({
-    limit: '50mb',
-    extended: true
-}));
-app.use("/uploads", express.static("uploads"));
-// ✅ NEW API ROUTES
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/user", require("./routes/userRoutes"));
-app.use("/api/claims", require("./routes/claimRoutes"));
-app.use("/api/payment", require("./routes/paymentRoutes"));
-
-// ✅ MongoDB connection 
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("✅ MongoDB Atlas Connected"))
-.catch(err => {
-  console.error("❌ MongoDB Error:", err);
-  process.exit(1);
+const upload = multer({
+  storage
 });
 
 mongoose.connection.once("open", () => {
