@@ -24,11 +24,52 @@ const razorpay = new Razorpay({
 
 const app = express();
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    if (file.fieldname === "aadhaar") {
+      cb(null, "uploads/agents/aadhaar");
+    } else if (file.fieldname === "pan") {
+      cb(null, "uploads/agents/pan");
+    } else if (file.fieldname === "photo") {
+      cb(null, "uploads/agents/photos");
+    }
+  },
 
-const upload = multer({
-  storage: storage
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "_" + file.originalname);
+  }
 });
+
+const memberStorage = multer.diskStorage({
+
+    destination: function(req, file, cb){
+
+        if(file.fieldname === "aadhaar"){
+            cb(null, "uploads/members/aadhaar");
+        }
+
+        else if(file.fieldname === "pan"){
+            cb(null, "uploads/members/pan");
+        }
+
+        else if(file.fieldname === "photo"){
+            cb(null, "uploads/members/photos");
+        }
+
+    },
+
+    filename:function(req,file,cb){
+        cb(null, Date.now() + "_" + file.originalname);
+    }
+
+});
+
+const memberUpload = multer({
+    storage: memberStorage
+});
+
+
+const upload = multer({ storage });
 
 function auth(req, res, next) {
   try {
@@ -72,6 +113,9 @@ mongoose.connect(process.env.MONGO_URI)
 .catch(err => {
   console.error("❌ MongoDB Error:", err);
   process.exit(1);
+});
+
+mongoose.connection.once("open", () => {
 });
 
 // ✅ Schema
@@ -126,7 +170,7 @@ app.get('/admin-profile', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false
@@ -172,7 +216,7 @@ app.post("/update-admin-profile", async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false
@@ -197,13 +241,10 @@ app.post("/contact", async (req, res) => {
     });
 
     await newContact.save();
-
-    console.log("Saved:", newContact);
-
     res.send("Message saved successfully!");
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error saving data");
   }
 });
@@ -266,15 +307,11 @@ app.post("/agent-login", async (req, res) => {
   const { agentId, password } = req.body;
 
   try {
-    console.log("LOGIN DATA:", agentId, password);
-
         const agent = await Agent.findOne({
       agent_id: agentId,
       password: password,
       status: "active"
     });
-
-    console.log("FOUND AGENT:", agent);
 
     if (!agent) {
       return res.json({ success: false });
@@ -320,7 +357,6 @@ async (req, res) => {
 
     const agentId = "AG" + Date.now();
     const password = "AG" + Math.floor(1000 + Math.random() * 9000);
-
     const newAgent = new Agent({
       agent_id: agentId,
       name,
@@ -332,29 +368,108 @@ dob,
 joinDate,
 
 aadharFile:
-  req.files?.aadhaar?.[0]?.originalname || "",
+  req.files?.aadhaar?.[0]
+    ? "/uploads/agents/aadhaar/" + req.files.aadhaar[0].filename
+    : "",
 
 panFile:
-  req.files?.pan?.[0]?.originalname || "",
+  req.files?.pan?.[0]
+    ? "/uploads/agents/pan/" + req.files.pan[0].filename
+    : "",
 
 photoFile:
-  req.files?.photo?.[0]?.originalname || ""
+  req.files?.photo?.[0]
+    ? "/uploads/agents/photos/" + req.files.photo[0].filename
+    : "",
     });
 
     await newAgent.save();
-
-    console.log("NEW AGENT CREATED:", newAgent);
-
     res.json({
       success: true,
       agent: newAgent
     });
 
   } catch (error) {
-    console.error("Create agent failed:", error);
-    res.status(500).json({ success: false });
-  }
+
+ console.error("CREATE AGENT ERROR:", error);
+
+    res.status(500).json({
+        success: false,
+        message: error.message
+    });
+
+}
 });
+
+// ✅ create-member
+app.post(
+  "/create-member",
+  memberUpload.fields([
+    { name: "aadhaar", maxCount: 1 },
+    { name: "pan", maxCount: 1 },
+    { name: "photo", maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+
+      const {
+        name,
+        email,
+        phone,
+        joinDate,
+        address
+      } = req.body;
+
+      const memberId = "MB" + Date.now();
+      const password = "MB" + Math.floor(1000 + Math.random() * 9000);
+      const newMember = new Member({
+        member_id: memberId,
+
+        name,
+        email,
+        phone,
+
+        role: "Member",
+
+        password,
+
+        status: "active",
+
+        joinDate,
+
+        address,
+
+        aadharFile:
+          req.files?.aadhaar?.[0]
+            ? "/uploads/members/aadhaar/" + req.files.aadhaar[0].filename
+            : "",
+
+        panFile:
+          req.files?.pan?.[0]
+            ? "/uploads/members/pan/" + req.files.pan[0].filename
+            : "",
+
+        photoFile:
+          req.files?.photo?.[0]
+            ? "/uploads/members/photos/" + req.files.photo[0].filename
+            : ""
+      });
+
+      await newMember.save();
+      res.json({
+        success: true,
+        member: newMember
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+);
+
 
 // ✅ Dashboard Summary
 app.get("/dashboard-summary", async (req, res) => {
@@ -398,7 +513,7 @@ app.put("/update-agent/:id", async (req, res) => {
 
   } catch(error) {
 
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false
@@ -422,6 +537,19 @@ app.get("/agents", async (req, res) => {
 // ✅ Agent wise students + farmers
 app.get("/agent/:agentId", async (req, res) => {
   try {
+const agent = await Agent.findOne({
+  agent_id: req.params.agentId
+});
+
+console.log("Requested:", req.params.agentId);
+console.log("Found agent:", agent);
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found"
+      });
+    }
+
     const students = await Student.find({
       agent_id: req.params.agentId
     });
@@ -431,12 +559,17 @@ app.get("/agent/:agentId", async (req, res) => {
     });
 
     res.json({
+      success: true,
+      agent,
       students,
       farmers
     });
 
   } catch (error) {
-    res.status(500).send("Agent data failed");
+    console.error(error);
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
@@ -490,7 +623,7 @@ app.delete("/delete-agent/:id", async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false
@@ -524,7 +657,7 @@ app.post("/admin-login", async (req, res) => {
     res.status(401).send("Invalid admin credentials");
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Admin login failed");
   }
 });
@@ -597,7 +730,7 @@ app.get("/admin-dashboard-stats", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Dashboard stats failed");
   }
 });
@@ -612,7 +745,7 @@ app.get("/document-pending", async (req, res) => {
     res.json(students);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load document pending students");
   }
 });
@@ -693,7 +826,7 @@ res.json({
 });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Login error");
   }
 });
@@ -709,13 +842,9 @@ app.post("/student-register", async (req, res) => {
     });
 
     await newStudent.save();
-
-    console.log("Student Saved:", newStudent);
-
     res.send("Student registered successfully!");
-
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error saving student");
   }
 });
@@ -742,7 +871,7 @@ app.post("/save-enrollment", async (req, res) => {
     res.json({ success: true, student });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Enrollment save failed");
   }
 });
@@ -766,7 +895,7 @@ app.post("/save-enrollment", async (req, res) => {
     res.json(renewalStudents);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error fetching renewal list");
   }
 });
@@ -782,7 +911,7 @@ app.get("/pending-enrollments", async (req, res) => {
     res.json(students);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load pending students");
   }
 });
@@ -809,7 +938,7 @@ app.put("/approve-student/:id", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Approve failed"
@@ -854,7 +983,7 @@ app.get("/approved-enrollments", async (req, res) => {
     res.json(students);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load approved students");
   }
 });
@@ -869,7 +998,7 @@ app.get("/rejected-enrollments", async (req, res) => {
     res.json(students);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load rejected students");
   }
 });
@@ -892,7 +1021,7 @@ app.get("/api/card/aadhar/:aadhaar", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Aadhaar search failed");
   }
 });
@@ -915,7 +1044,7 @@ app.get("/api/card/mobile/:mobile", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Mobile search failed");
   }
 });
@@ -939,7 +1068,7 @@ app.get("/api/card/punya/:accountNo", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Account search failed");
   }
 });
@@ -960,35 +1089,31 @@ app.get("/student-dashboard-data/:agentId", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ success: false });
   }
 });
 
 app.get('/students', async (req, res) => {
 
-    const students = await Student.find()
-        .sort({ _id: -1 });
-
+    const students = await Student.find().sort({ _id: -1 });
     res.json(students);
 
 });
 
 // DELETE STUDENT
 app.delete('/students/:id', async (req, res) => {
+   try {
 
-    try {
+    const student = await Student.findOne({ _id: req.params.id });
 
-        const deletedStudent =
-            await Student.findByIdAndDelete(req.params.id);
-
+   const deletedStudent =
+    await Student.findOneAndDelete({ _id: req.params.id });
         if (!deletedStudent) {
-
             return res.status(404).json({
                 success: false,
                 message: "Student not found"
             });
-
         }
 
         res.json({
@@ -997,14 +1122,12 @@ app.delete('/students/:id', async (req, res) => {
         });
 
     } catch (error) {
-
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
             message: "Delete failed"
         });
-
     }
 
 });
@@ -1041,7 +1164,7 @@ app.put('/students/:id', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -1057,16 +1180,11 @@ app.put('/students/:id', async (req, res) => {
 app.post("/verify-student-password", async (req, res) => {
   try {
     const { mobile, password, agent_id } = req.body;
-
-    console.log("VERIFY INPUT:", { mobile, password, agent_id });
-
     const student = await Student.findOne({
       phone: String(mobile).trim(),
       password: String(password).trim(),
       agent_id: String(agent_id).trim()
     });
-
-    console.log("FOUND STUDENT:", student);
 
     if (!student) {
       return res.json({ success: false });
@@ -1075,7 +1193,7 @@ app.post("/verify-student-password", async (req, res) => {
     res.json({ success: true, student });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Verification failed");
   }
 });
@@ -1151,9 +1269,6 @@ app.post("/farmer-register", async (req, res) => {
   });
 
     await newFarmer.save();
-
-    console.log("Farmer Saved:", newFarmer);
-
     res.json({
       success: true,
       farmer: newFarmer
@@ -1161,7 +1276,7 @@ app.post("/farmer-register", async (req, res) => {
 
     
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error saving farmer");
   }
 });
@@ -1169,21 +1284,18 @@ app.post("/farmer-register", async (req, res) => {
 
 app.get('/farmers', async (req, res) => {
 
-    const farmers = await Farmer.find()
-        .sort({ _id: -1 });
-
+    const farmers = await Farmer.find().sort({ _id: -1 });
     res.json(farmers);
 
 });
 
 // DELETE FARMER
 app.delete('/farmers/:id', async (req, res) => {
+   try {
 
-    try {
-
-        const deletedFarmer =
-            await Farmer.findByIdAndDelete(req.params.id);
-
+   const farmer = await Farmer.findOne({ _id: req.params.id });
+    const deletedFarmer =
+       await Farmer.findOneAndDelete({ _id: req.params.id });
         if (!deletedFarmer) {
 
             return res.status(404).json({
@@ -1200,7 +1312,7 @@ app.delete('/farmers/:id', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -1249,7 +1361,7 @@ app.put('/farmers/:id', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -1264,9 +1376,6 @@ app.put('/farmers/:id', async (req, res) => {
 app.post("/farmer-login", async (req, res) => {
   try {
     const { farmerId, password } = req.body;
-
-    console.log("Farmer Login Request:", farmerId, password);
-
     const farmer = await Farmer.findOne({
         $or: [
       { email: farmerId },
@@ -1289,9 +1398,6 @@ app.post("/farmer-login", async (req, res) => {
     role: "Farmer",
     action: "Logged In"
   });
-
-    console.log("Farmer Login Success:", farmer.fullname);
-
       res.json({
       success: true,
       message: "Login successful",
@@ -1299,7 +1405,6 @@ app.post("/farmer-login", async (req, res) => {
     });
 
   } catch (error) {
-    console.log("Farmer login error:", error);
     res.status(500).send("Farmer login error");
   }
 });
@@ -1307,8 +1412,6 @@ app.post("/farmer-login", async (req, res) => {
 // ✅ Approve Farmer
 app.put("/approve-farmer/:id", async (req, res) => {
   try {
-    console.log("APPROVE FARMER HIT:", req.params.id);
-
     const farmer = await Farmer.findByIdAndUpdate(
       req.params.id,
       { status: "Approved" },
@@ -1327,7 +1430,6 @@ app.put("/approve-farmer/:id", async (req, res) => {
       }
     });
   } catch (error) {
-    console.log("APPROVE FARMER ERROR:", error);
     res.status(500).json({
       success: false
     });
@@ -1357,7 +1459,7 @@ app.put("/reject-farmer/:id", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Reject failed"
@@ -1375,7 +1477,7 @@ app.get("/rejected-farmers", async (req, res) => {
 
     res.json(farmers);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load rejected farmers");
   }
 });
@@ -1389,7 +1491,7 @@ app.get("/document-pending-farmers", async (req, res) => {
 
     res.json(farmers);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load document pending farmers");
   }
 });
@@ -1413,7 +1515,7 @@ app.get("/renewal-farmers", async (req, res) => {
     res.json(renewalFarmers);
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Failed to load renewal farmers");
   }
 });
@@ -1422,18 +1524,10 @@ app.get("/renewal-farmers", async (req, res) => {
 app.post("/verify-farmer-password", async (req, res) => {
   try {
     const { mobile, password } = req.body;
-
-    console.log("VERIFY INPUT:", {
-      mobile,
-      password
-    });
-
     const farmer = await Farmer.findOne({
       phone: mobile.trim(),
       password: password.trim()
     });
-
-    console.log("FOUND FARMER:", farmer);
 
     if (!farmer) {
       return res.json({ success: false });
@@ -1445,7 +1539,6 @@ app.post("/verify-farmer-password", async (req, res) => {
     });
 
   } catch (error) {
-    console.log("VERIFY ERROR:", error);
     res.status(500).json({ success: false });
   }
 });
@@ -1529,7 +1622,7 @@ app.get("/farmer-dashboard-data/:agentId", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ success: false });
   }
 });
@@ -1558,12 +1651,9 @@ app.post("/girls-scholarship", async (req, res) => {
   try {
     const scholarship = new GirlsScholarship(req.body);
     await scholarship.save();
-
-    console.log("Girls Scholarship Saved:", scholarship);
-
     res.send("Scholarship saved successfully");
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error saving scholarship");
   }
 });
@@ -1574,7 +1664,7 @@ app.get("/girls-scholarship-list", async (req, res) => {
     const data = await GirlsScholarship.find().sort({ requestDate: -1 });
     res.json(data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error fetching scholarship list");
   }
 });
@@ -1597,12 +1687,9 @@ app.post("/health-claim", async (req, res) => {
   try {
     const claim = new HealthClaim(req.body);
     await claim.save();
-
-    console.log("Health Claim Saved:", claim);
-
     res.send("Health claim saved successfully");
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error saving health claim");
   }
 });
@@ -1613,7 +1700,7 @@ app.get("/health-claim-list", async (req, res) => {
     const data = await HealthClaim.find().sort({ requestDate: -1 });
     res.json(data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send("Error fetching health claim list");
   }
 });
@@ -1776,29 +1863,26 @@ mongoose.models.Volunteer ||
 mongoose.model('Volunteer', volunteerSchema);
 
 app.post('/api/volunteers', async (req, res) => {
-
     try {
 
         const volunteer = new Volunteer(req.body);
 
-        await volunteer.save();
-
+        const savedVolunteer = await volunteer.save();
         res.json({
             success: true,
-            message: 'Volunteer Saved Successfully'
+            message: "Volunteer Saved Successfully"
         });
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: "Server Error"
         });
 
     }
-
 });
 
 // ✅ GET ALL VOLUNTEERS
@@ -1809,8 +1893,6 @@ app.get('/api/volunteers', async (req, res) => {
         const volunteers = await Volunteer.find()
             .sort({ _id: -1 });
 
-        console.log("VOLUNTEERS:", volunteers);
-
         res.json({
             success: true,
             volunteers
@@ -1818,7 +1900,7 @@ app.get('/api/volunteers', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false
@@ -1851,7 +1933,7 @@ app.delete('/api/volunteers/:id', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -1901,7 +1983,7 @@ app.put('/api/volunteers/:id', async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -1944,11 +2026,38 @@ app.get("/api/payment/donations", async (req, res) => {
 
 const memberSchema = new mongoose.Schema({
 
+    member_id: {
+        type: String,
+        unique: true
+    },
+
     name: String,
+
     email: String,
+
     phone: String,
+
+    role: {
+        type: String,
+        default: "Member"
+    },
+
+    password: String,
+
+    status: {
+        type: String,
+        default: "active"
+    },
+
     joinDate: String,
-    address: String
+
+    address: String,
+
+    aadharFile: String,
+
+    panFile: String,
+
+    photoFile: String
 
 });
 
@@ -2038,6 +2147,38 @@ app.delete('/members/:id', async (req, res) => {
 
 });
 
+// GET SINGLE MEMBER
+app.get("/member/:memberId", async (req, res) => {
+    try {
+
+        const member = await Member.findOne({
+            member_id: req.params.memberId
+        });
+
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: "Member not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            member
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+});
+
 
 // ✅ donations routes
 app.get('/donations', async (req, res) => {
@@ -2096,10 +2237,6 @@ const schemeSchema = new mongoose.Schema({
 const Scheme =
 mongoose.models.Scheme ||
 mongoose.model('Scheme', schemeSchema);
-(
-    'Scheme',
-    schemeSchema
-);
 
 // ✅ Schemes routes
 app.get('/schemes', async (req, res) => {
@@ -2229,5 +2366,5 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
