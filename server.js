@@ -331,6 +331,22 @@ async (req, res) => {
     console.log("FILES RECEIVED:");
     console.log(req.files);
   try {
+
+    console.log("========== FILES RECEIVED ==========");
+
+console.log(req.files);
+
+if (req.files?.aadhaar?.[0]) {
+    console.log("AADHAAR:", req.files.aadhaar[0]);
+}
+
+if (req.files?.pan?.[0]) {
+    console.log("PAN:", req.files.pan[0]);
+}
+
+if (req.files?.photo?.[0]) {
+    console.log("PHOTO:", req.files.photo[0]);
+}
     const {
   name,
   email,
