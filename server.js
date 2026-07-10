@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const auth = require("./middleware/authMiddleware");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
