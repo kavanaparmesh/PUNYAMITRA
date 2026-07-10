@@ -2325,12 +2325,14 @@ app.delete('/events/:id', async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err);
+  console.error("========= GLOBAL ERROR =========");
+  console.error(err);
+  console.error(err.stack);
+  console.error("===============================");
 
   res.status(500).json({
     success: false,
-    message: err.message,
-    stack: err.stack
+    message: err.message
   });
 });
 
