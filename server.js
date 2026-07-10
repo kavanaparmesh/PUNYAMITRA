@@ -327,6 +327,9 @@ upload.fields([
   { name: "photo", maxCount: 1 }
 ]),
 async (req, res) => {
+
+    console.log("FILES RECEIVED:");
+    console.log(req.files);
   try {
     const {
   name,
@@ -2369,12 +2372,15 @@ app.use((req, res) => {
 
 });
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 10000
+})
 .then(() => {
-    console.log("MongoDB Atlas Connected");
+  console.log("✅ MongoDB Atlas Connected");
 })
 .catch((err) => {
-    console.error("MongoDB Connection Error:", err);
+  console.error("❌ MongoDB Connection Error:");
+  console.error(err);
 });
 
 
