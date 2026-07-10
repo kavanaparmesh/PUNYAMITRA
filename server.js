@@ -39,6 +39,8 @@ app.use(express.urlencoded({
   limit: "50mb"
 }));
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
 
@@ -97,8 +99,6 @@ const memberUpload = multer({
   storage: memberStorage
 });
 
-mongoose.connection.once("open", () => {
-});
 
 // ✅ Schema
 const ContactSchema = new mongoose.Schema({
@@ -2303,16 +2303,25 @@ app.get('/events', async (req, res) => {
 
 });
 
-app.post('/events', async (req, res) => {
+app.post("/events", async (req, res) => {
+    try {
 
-    const event = new Event(req.body);
+        const event = new Event(req.body);
 
-    await event.save();
+        await event.save();
 
-    res.json({
-        success: true
-    });
+        res.json({
+            success: true
+        });
 
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 });
 
 app.put('/events/:id', async (req, res) => {
@@ -2358,6 +2367,14 @@ app.use((req, res) => {
         message: "Route not found"
     });
 
+});
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+    console.log("MongoDB Atlas Connected");
+})
+.catch((err) => {
+    console.error("MongoDB Connection Error:", err);
 });
 
 
