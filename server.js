@@ -320,41 +320,35 @@ app.post("/agent-login", async (req, res) => {
 });
 
 // ✅ create-agent
-app.post("/create-agent",
-upload.fields([
-  { name: "aadhaar", maxCount: 1 },
-  { name: "pan", maxCount: 1 },
-  { name: "photo", maxCount: 1 }
-]),
-async (req, res) => {
+app.post(
+  "/create-agent",
+  upload.fields([
+    { name: "aadhaar", maxCount: 1 },
+    { name: "pan", maxCount: 1 },
+    { name: "photo", maxCount: 1 }
+  ]),
+  async (req, res) => {
 
-    console.log("FILES RECEIVED:");
-    console.log(req.files);
-  try {
-
+    console.log("🔥 CREATE AGENT ROUTE HIT 🔥");
     console.log("========== FILES RECEIVED ==========");
 
-console.log(req.files);
+    console.log("req.body =", req.body);
+    console.log("req.files =", req.files);
 
-if (req.files?.aadhaar?.[0]) {
-    console.log("AADHAAR:", req.files.aadhaar[0]);
-}
+    console.log("Aadhaar:", req.files?.aadhaar?.[0]);
+    console.log("PAN:", req.files?.pan?.[0]);
+    console.log("Photo:", req.files?.photo?.[0]);
 
-if (req.files?.pan?.[0]) {
-    console.log("PAN:", req.files.pan[0]);
-}
+    try {
 
-if (req.files?.photo?.[0]) {
-    console.log("PHOTO:", req.files.photo[0]);
-}
-    const {
-  name,
-  email,
-  phone,
-  role,
-  dob,
-  joinDate
-} = req.body;
+      const {
+        name,
+        email,
+        phone,
+        role,
+        dob,
+        joinDate
+      } = req.body;
 
     const agentId = "AG" + Date.now();
     const password = "AG" + Math.floor(1000 + Math.random() * 9000);
